@@ -1,5 +1,5 @@
 {
-    "hash": "78e20b9955fc4dd96818d59ce26bb185",
+    "hash": "3dccc2181f5ca1d30ca1a07c8368f56f",
     "packages": [
         {
             "name": "illuminate/support",
@@ -44,9 +44,7 @@
             "description": "Various utilities and support functions."
         }
     ],
-    "packages-dev": [
-
-    ],
+    "packages-dev": null,
     "aliases": [
 
     ],
