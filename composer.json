@@ -1,23 +1,24 @@
 {
-    "name": "regulus/tetra-text",
-    "description": "",
-    "authors": [
-        {
-            "name": "Cody Jassman",
-            "email": "me@codyjassman.com"
-        }
-    ],
-    "require": {
-        "php": ">=5.3.0",
-        "illuminate/support": "4.0.x"
-    },
-    "autoload": {
-        "classmap": [
-            "src/migrations"
-        ],
-        "psr-0": {
-            "Regulus\\TetraText": "src/"
-        }
-    },
-    "minimum-stability": "dev"
+	"name": "regulus/tetra-text",
+	"description": "A small text/string formatting composer package that formats phone numbers, numeric values, money values and more.",
+	"license": "MIT",
+	"authors": [
+		{
+			"name": "Cody Jassman",
+			"email": "me@codyjassman.com"
+		}
+	],
+	"require": {
+		"php": ">=5.3.0",
+		"illuminate/support": "4.0.x"
+	},
+	"autoload": {
+		"classmap": [
+			"src/migrations"
+		],
+		"psr-0": {
+			"Regulus\\TetraText": "src/"
+		}
+	},
+	"minimum-stability": "dev"
 }
