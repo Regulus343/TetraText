@@ -6,8 +6,11 @@
 		money values and more. There are also some limited date functions available.
 
 		created by Cody Jassman
-		last updated on January 29, 2013
+		last updated on February 19, 2013
 ----------------------------------------------------------------------------------------------------------*/
+
+use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Str;
 
 class TetraText {
 
@@ -146,7 +149,7 @@ class TetraText {
 	 */
 	public static function pluralize($message, $number, $singular = 'result', $plural = false)
 	{
-		if (!$plural) $plural = $singular.'s'; //default plural word to singular word with added "s"
+		if (!$plural) $plural = Str::plural($singular);
 		$message = str_replace('[number]', $number, $message);
 		if ($number == 1) {
 			return str_replace('[word]', $singular, $message);
@@ -165,7 +168,7 @@ class TetraText {
 	 */
 	public static function entities($value)
 	{
-		return htmlentities($value, ENT_QUOTES, Config::get('formation::encoding'), false);
+		return htmlentities($value, ENT_QUOTES, Config::get('tetra-text::encoding'), false);
 	}
 
 	/**
