@@ -8,4 +8,6 @@ $baseDir = dirname($vendorDir);
 return array(
     'Regulus\\TetraText' => $baseDir . '/src/',
     'Illuminate\\Support' => $vendorDir . '/illuminate/support/',
+    'HTMLPurifier_' => $vendorDir . '/nick4fake/htmlpurifier/HTMLPurifier/',
+    'HTMLPurifier' => $vendorDir . '/nick4fake/htmlpurifier/',
 );

@@ -1,5 +1,5 @@
 {
-    "hash": "3dccc2181f5ca1d30ca1a07c8368f56f",
+    "hash": "e98c00c8c41658aa7660dd57954528e6",
     "packages": [
         {
             "name": "illuminate/support",
@@ -7,19 +7,22 @@
             "target-dir": "Illuminate/Support",
             "source": {
                 "type": "git",
-                "url": "http://github.com/illuminate/support",
-                "reference": "4888e24fa192b1b481a861f2cee46e8e08fd290e"
+                "url": "https://github.com/illuminate/support.git",
+                "reference": "75a8e4b985ede4db00377005a6b69746c8d87dc8"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://github.com/illuminate/support/archive/4888e24fa192b1b481a861f2cee46e8e08fd290e.zip",
-                "reference": "4888e24fa192b1b481a861f2cee46e8e08fd290e",
+                "url": "https://api.github.com/repos/illuminate/support/zipball/75a8e4b985ede4db00377005a6b69746c8d87dc8",
+                "reference": "75a8e4b985ede4db00377005a6b69746c8d87dc8",
                 "shasum": ""
             },
             "require": {
                 "php": ">=5.3.0"
             },
-            "time": "2013-01-29 05:19:10",
+            "require-dev": {
+                "mockery/mockery": "0.7.2",
+                "patchwork/utf8": "1.0.*"
+            },
             "type": "library",
             "extra": {
                 "branch-alias": {
@@ -41,15 +44,56 @@
                     "email": "taylorotwell@gmail.com"
                 }
             ],
-            "description": "Various utilities and support functions."
+            "description": "Various utilities and support functions.",
+            "time": "2013-03-20 01:32:32"
+        },
+        {
+            "name": "nick4fake/htmlpurifier",
+            "version": "dev-master",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/nick4fake/htmlpurifier.git",
+                "reference": "a33ac67e68c7aa241a3d2aa27174ba88df48b1e8"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/nick4fake/htmlpurifier/zipball/a33ac67e68c7aa241a3d2aa27174ba88df48b1e8",
+                "reference": "a33ac67e68c7aa241a3d2aa27174ba88df48b1e8",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.2.4"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-0": {
+                    "HTMLPurifier": "",
+                    "HTMLPurifier_": "HTMLPurifier/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "LGPL-2.0"
+            ],
+            "description": "HTML Purifier is a standards-compliant HTML filter library written in PHP.",
+            "homepage": "http://htmlpurifier.org/",
+            "time": "2012-09-19 09:37:36"
         }
     ],
-    "packages-dev": null,
+    "packages-dev": [
+
+    ],
     "aliases": [
 
     ],
     "minimum-stability": "dev",
-    "stability-flags": [
+    "stability-flags": {
+        "nick4fake/htmlpurifier": 20
+    },
+    "platform": {
+        "php": ">=5.3.0"
+    },
+    "platform-dev": [
 
     ]
 }

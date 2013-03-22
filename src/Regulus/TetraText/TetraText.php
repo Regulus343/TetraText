@@ -6,11 +6,13 @@
 		money values and more. There are also some limited date functions available.
 
 		created by Cody Jassman
-		last updated on February 20, 2013
+		last updated on March 21, 2013
 ----------------------------------------------------------------------------------------------------------*/
 
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Str;
+
+use \HTMLPurifier;
 
 class TetraText {
 
@@ -373,6 +375,22 @@ class TetraText {
 		$md5 = md5(rand(100000, 99999999).rand(100000, 99999999));
 		if ($length > 32) $md5 .= md5(rand(100000, 99999999).rand(100000, 99999999)); //double length if length to return exceeds 32 characters
 		return substr($md5, 0, $length);
+	}
+
+	/**
+	 * Use HTMLPurifier to sanitize HTML data.
+	 *
+	 * @param  string  $html
+	 */
+	public function purifyHTML($html) {
+		$purifier = new HTMLPurifier();
+		$html = trim($html);
+		$html = $purifier->purify($html);
+
+		if (substr($html, -4) == "<br>") $html = substr($html, 0, (strlen($html) - 4));
+		$html = str_replace('<br>', '<br />', $html);
+
+		return $html;
 	}
 
 }
