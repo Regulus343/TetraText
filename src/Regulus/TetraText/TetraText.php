@@ -6,7 +6,7 @@
 		money values and more. There are also some limited date functions available.
 
 		created by Cody Jassman
-		last updated on March 21, 2013
+		last updated on March 27, 2013
 ----------------------------------------------------------------------------------------------------------*/
 
 use Illuminate\Support\Facades\Config;
@@ -93,7 +93,7 @@ class TetraText {
 				$bracketL = ""; $bracketR = $separator;
 				if ($digits == 11) { $firstDigit = "1".$separator; } else { $firstDigit = ""; }
 			}
-			$phoneNumber = static::numeric($phoneNumber);
+			$phoneNumber = static::numeric($phoneNumber, false);
 			$length = strlen($phoneNumber);
 			$offset = $length - $digits;
 			if ($offset < 0) $offset = 0;
@@ -103,7 +103,7 @@ class TetraText {
 			} else if ($digits == 10 && $length == 11) {
 				$offset ++;
 			}
-			$variable = $firstDigit.$bracketL.substr($phoneNumber, $offset, 3).$bracketR.substr($phoneNumber, ($offset+3), 3).$separator.substr($phoneNumber, ($offset+6), 4);
+			$phoneNumber = $firstDigit.$bracketL.substr($phoneNumber, $offset, 3).$bracketR.substr($phoneNumber, ($offset+3), 3).$separator.substr($phoneNumber, ($offset+6), 4);
 			return $phoneNumber;
 		}
 	}
@@ -138,6 +138,68 @@ class TetraText {
 			return $type[0];
 		else
 			return $type[1];
+	}
+
+	/**
+	 * Turn a list of items into a string.
+	 *
+	 * @param  array   $list
+	 * @param  string  $delimiter
+	 * @return string
+	 */
+	public static function listToStr($list, $delimiter = ', ')
+	{
+		$str = "";
+		foreach ($list as $key => $value) {
+			if (!is_numeric($key) && is_numeric($value)) {
+				if ($value) {
+					if ($str == "") {
+						$str = $key;
+					} else {
+						$str .= $delimiter.$key;
+					}
+				}
+			} else {
+				if ($str == "") {
+					$str = $value;
+				} else {
+					$str .= $delimiter.$value;
+				}
+			}
+		}
+		return $str;
+	}
+
+	/**
+	 * Turn an object into a string of items based on a given attribute or method.
+	 *
+	 * @param  object  $obj
+	 * @param  string  $item
+	 * @param  string  $delimiter
+	 * @return string
+	 */
+	public static function objListToStr($obj, $attribute = null, $delimiter = ', ')
+	{
+		$str = "";
+		foreach ($obj as $objListed) {
+			if (is_null($attribute)) {
+				$item = $objListed;
+			} else {
+				preg_match('/\(\)/', $attribute, $functionMatch);
+				if (!empty($functionMatch)) { //attribute is a method of object; call it
+					$function = str_replace('()', '', $attribute);
+					$item = $objListed->$function();
+				} else {
+					$item = $objListed->{$attribute};
+				}
+			}
+			if ($str == "") {
+				$str = $item;
+			} else {
+				$str .= ', '.$item;
+			}
+		}
+		return $str;
 	}
 
 	/**
