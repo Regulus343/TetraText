@@ -6,7 +6,7 @@
 		money values and more. There are also some limited date functions available.
 
 		created by Cody Jassman
-		last updated on March 27, 2013
+		last updated on April 1, 2013
 ----------------------------------------------------------------------------------------------------------*/
 
 use Illuminate\Support\Facades\Config;
@@ -444,7 +444,7 @@ class TetraText {
 	 *
 	 * @param  string  $html
 	 */
-	public function purifyHTML($html) {
+	public static function purifyHTML($html) {
 		$purifier = new HTMLPurifier();
 		$html = trim($html);
 		$html = $purifier->purify($html);
