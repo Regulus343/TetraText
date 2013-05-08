@@ -6,7 +6,7 @@
 		money values and more. There are also some limited date functions available.
 
 		created by Cody Jassman
-		last updated on April 1, 2013
+		last updated on May 7, 2013
 ----------------------------------------------------------------------------------------------------------*/
 
 use Illuminate\Support\Facades\Config;
@@ -72,6 +72,29 @@ class TetraText {
 			}
 		} else { $formatted = $prefix.'0.00'; }
 		return $formatted;
+	}
+
+	/**
+	 * Calculate the percentage of a value to a total. Avoids division by zero error.
+	 *
+	 * @param  float   $value
+	 * @param  float   $total
+	 * @param  integer $decimals
+	 * @param  boolean $returnNumeric
+	 * @return mixed
+	 */
+	public static function percent($value = 0, $total = 0, $decimals = 1, $returnNumeric = false)
+	{
+		$value = static::numeric($value, true);
+		$total = static::numeric($total, true);
+
+		$percent = 0;
+		if ($total > 0) {
+			$percent = round($value / $total * 100, $decimals);
+		}
+
+		if (!$returnNumeric) $percent .= '%';
+		return $percent;
 	}
 
 	/**
