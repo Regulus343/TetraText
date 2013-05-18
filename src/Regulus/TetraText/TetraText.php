@@ -450,6 +450,17 @@ class TetraText {
 	}
 
 	/**
+	 * Separate a string into paragraphs.
+	 *
+	 * @param  string  $string
+	 * @return string
+	 */
+	public static function paragraphs($string)
+	{
+		return '<p>'.static::nl2p($string).'</p>';
+	}
+
+	/**
 	 * Get a random MD5 hash.
 	 *
 	 * @param  integer $length

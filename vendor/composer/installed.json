@@ -1,5 +1,54 @@
 [
     {
+        "name": "illuminate/support",
+        "version": "dev-master",
+        "version_normalized": "9999999-dev",
+        "target-dir": "Illuminate/Support",
+        "source": {
+            "type": "git",
+            "url": "https://github.com/illuminate/support.git",
+            "reference": "3416ba8aa0ceb44e80a2c53d51c8eac11716b3eb"
+        },
+        "dist": {
+            "type": "zip",
+            "url": "https://api.github.com/repos/illuminate/support/zipball/3416ba8aa0ceb44e80a2c53d51c8eac11716b3eb",
+            "reference": "3416ba8aa0ceb44e80a2c53d51c8eac11716b3eb",
+            "shasum": ""
+        },
+        "require": {
+            "php": ">=5.3.0"
+        },
+        "require-dev": {
+            "mockery/mockery": "0.7.2",
+            "patchwork/utf8": "1.1.*",
+            "phpunit/phpunit": "3.7.*"
+        },
+        "time": "2013-05-12 01:10:00",
+        "type": "library",
+        "extra": {
+            "branch-alias": {
+                "dev-master": "4.0-dev"
+            }
+        },
+        "installation-source": "source",
+        "autoload": {
+            "psr-0": {
+                "Illuminate\\Support": ""
+            },
+            "files": [
+                "Illuminate/Support/helpers.php"
+            ]
+        },
+        "notification-url": "https://packagist.org/downloads/",
+        "authors": [
+            {
+                "name": "Taylor Otwell",
+                "email": "taylorotwell@gmail.com"
+            }
+        ],
+        "description": "Various utilities and support functions."
+    },
+    {
         "name": "nick4fake/htmlpurifier",
         "version": "dev-master",
         "version_normalized": "9999999-dev",
@@ -32,54 +81,5 @@
         ],
         "description": "HTML Purifier is a standards-compliant HTML filter library written in PHP.",
         "homepage": "http://htmlpurifier.org/"
-    },
-    {
-        "name": "illuminate/support",
-        "version": "dev-master",
-        "version_normalized": "9999999-dev",
-        "target-dir": "Illuminate/Support",
-        "source": {
-            "type": "git",
-            "url": "https://github.com/illuminate/support.git",
-            "reference": "e7649509dfa4cf5144d9c8c9890718a2dd47df89"
-        },
-        "dist": {
-            "type": "zip",
-            "url": "https://api.github.com/repos/illuminate/support/zipball/e7649509dfa4cf5144d9c8c9890718a2dd47df89",
-            "reference": "e7649509dfa4cf5144d9c8c9890718a2dd47df89",
-            "shasum": ""
-        },
-        "require": {
-            "php": ">=5.3.0"
-        },
-        "require-dev": {
-            "mockery/mockery": "0.7.2",
-            "patchwork/utf8": "1.1.*",
-            "phpunit/phpunit": "3.7.*"
-        },
-        "time": "2013-05-04 14:20:21",
-        "type": "library",
-        "extra": {
-            "branch-alias": {
-                "dev-master": "4.0-dev"
-            }
-        },
-        "installation-source": "source",
-        "autoload": {
-            "psr-0": {
-                "Illuminate\\Support": ""
-            },
-            "files": [
-                "Illuminate/Support/helpers.php"
-            ]
-        },
-        "notification-url": "https://packagist.org/downloads/",
-        "authors": [
-            {
-                "name": "Taylor Otwell",
-                "email": "taylorotwell@gmail.com"
-            }
-        ],
-        "description": "Various utilities and support functions."
     }
 ]
