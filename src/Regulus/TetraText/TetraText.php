@@ -256,9 +256,9 @@ class TetraText {
 	 */
 	public static function entities($string, $preserveHTML = false)
 	{
-		if ($preserveHTML) $string = str_replace('<', '[TAG-LEFT]', str_replace('>', '[TAG-RIGHT]'), $string));
+		if ($preserveHTML) $string = str_replace('<', '[TAG-LEFT]', str_replace('>', '[TAG-RIGHT]', $string));
 		$string = htmlentities($string, ENT_QUOTES, Config::get('tetra-text::encoding'), false);
-		if ($preserveHTML) $string = str_replace('[TAG-LEFT]', '<', str_replace('[TAG-RIGHT]', '>'), $string));
+		if ($preserveHTML) $string = str_replace('[TAG-LEFT]', '<', str_replace('[TAG-RIGHT]', '>', $string));
 		return $string;
 	}
 
