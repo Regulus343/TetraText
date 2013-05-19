@@ -250,12 +250,26 @@ class TetraText {
 	 *
 	 * The encoding specified in the application configuration file will be used.
 	 *
-	 * @param  string  $value
+	 * @param  string  $string
 	 * @return string
 	 */
-	public static function entities($value)
+	public static function entities($string)
 	{
-		return htmlentities($value, ENT_QUOTES, Config::get('tetra-text::encoding'), false);
+		return htmlentities($string, ENT_QUOTES, Config::get('tetra-text::encoding'), false);
+	}
+
+	/**
+	 * Ensure a string has a trailing slash.
+	 *
+	 * @param  string  $string
+	 * @return string
+	 */
+	public static function trailingSlash($string)
+	{
+		if ($string != "" && substr($string, -1) != "/") {    
+			$string .= "/";
+		}
+		return $string;
 	}
 
 	/**
