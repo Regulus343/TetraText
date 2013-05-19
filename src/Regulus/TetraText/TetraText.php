@@ -251,14 +251,14 @@ class TetraText {
 	 * The encoding specified in the application configuration file will be used. An option exists to keep HTML tags intact.
 	 *
 	 * @param  string  $string
-	 * @param  boolean $allowHTML
+	 * @param  boolean $preserveHTML
 	 * @return string
 	 */
-	public static function entities($string, $allowHTML = false)
+	public static function entities($string, $preserveHTML = false)
 	{
-		if ($allowHTML) $string = str_replace('<', '[TAG-LEFT]', str_replace('>', '[TAG-RIGHT]'), $string));
+		if ($preserveHTML) $string = str_replace('<', '[TAG-LEFT]', str_replace('>', '[TAG-RIGHT]'), $string));
 		$string = htmlentities($string, ENT_QUOTES, Config::get('tetra-text::encoding'), false);
-		if ($allowHTML) $string = str_replace('[TAG-LEFT]', '<', str_replace('[TAG-RIGHT]', '>'), $string));
+		if ($preserveHTML) $string = str_replace('[TAG-LEFT]', '<', str_replace('[TAG-RIGHT]', '>'), $string));
 		return $string;
 	}
 
