@@ -246,16 +246,20 @@ class TetraText {
 	}
 
 	/**
-	 * Convert HTML characters to entities.
+	 * Convert entities to HTML special characters.
 	 *
-	 * The encoding specified in the application configuration file will be used.
+	 * The encoding specified in the application configuration file will be used. An option exists to keep HTML tags intact.
 	 *
 	 * @param  string  $string
+	 * @param  boolean $allowHTML
 	 * @return string
 	 */
-	public static function entities($string)
+	public static function entities($string, $allowHTML = false)
 	{
-		return htmlentities($string, ENT_QUOTES, Config::get('tetra-text::encoding'), false);
+		if ($allowHTML) $string = str_replace('<', '[TAG-LEFT]', str_replace('>', '[TAG-RIGHT]'), $string));
+		$string = htmlentities($string, ENT_QUOTES, Config::get('tetra-text::encoding'), false);
+		if ($allowHTML) $string = str_replace('[TAG-LEFT]', '<', str_replace('[TAG-RIGHT]', '>'), $string));
+		return $string;
 	}
 
 	/**
