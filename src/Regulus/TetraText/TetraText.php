@@ -479,6 +479,27 @@ class TetraText {
 	}
 
 	/**
+	 * Limit a string to a number of characters.
+	 *
+	 * @param  string  $string
+	 * @param  string  $characters
+	 * @param  string  $end
+	 * @param  mixed   $endLink
+	 * @param  boolean $paragraphs
+	 * @return string
+	 */
+	public static function charLimit($string = '', $characters = 140, $end = '...', $endLink = false, $paragraphs = false)
+	{
+		$formattedString = substr($string, 0, $characters);
+		if ($formattedString != $string) {
+			if ($endLink) {$end = '<a href="'.URL::to($endLink).'">'.$end.'</a>';
+			$formattedString .= $end;
+		}
+		if ($paragraphs) $formattedString = static::paragraphs($formattedString);
+		return $formattedString;
+	}
+
+	/**
 	 * Get a random MD5 hash.
 	 *
 	 * @param  integer $length
