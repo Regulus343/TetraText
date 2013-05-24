@@ -476,7 +476,7 @@ class TetraText {
 	{
 		$formattedString = substr($string, 0, $characters);
 		if ($formattedString != $string) {
-			if ($endLink) {$end = '<a href="'.URL::to($endLink).'">'.$end.'</a>';
+			if ($endLink) $end = '<a href="'.URL::to($endLink).'">'.$end.'</a>';
 			$formattedString .= $end;
 		}
 		if ($paragraphs) $formattedString = static::paragraphs($formattedString);
