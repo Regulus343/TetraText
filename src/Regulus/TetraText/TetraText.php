@@ -453,10 +453,12 @@ class TetraText {
 	 * Separate a string into paragraphs.
 	 *
 	 * @param  string  $string
+	 * @param  integer $characters
 	 * @return string
 	 */
-	public static function paragraphs($string)
+	public static function paragraphs($string, $charLimit = 0)
 	{
+		if ($charLimit) $string = static::charLimit($string, $charLimit);
 		return '<p>'.static::nl2p($string).'</p>';
 	}
 
@@ -464,7 +466,7 @@ class TetraText {
 	 * Limit a string to a number of characters.
 	 *
 	 * @param  string  $string
-	 * @param  string  $characters
+	 * @param  integer $characters
 	 * @param  string  $end
 	 * @param  mixed   $endLink
 	 * @param  boolean $paragraphs
