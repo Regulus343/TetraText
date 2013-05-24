@@ -6,7 +6,7 @@
 		money values and more. There are also some limited date functions available.
 
 		created by Cody Jassman
-		last updated on May 18, 2013
+		last updated on May 23, 2013
 ----------------------------------------------------------------------------------------------------------*/
 
 use Illuminate\Support\Facades\Config;
@@ -127,8 +127,8 @@ class TetraText {
 				$offset ++;
 			}
 			$phoneNumber = $firstDigit.$bracketL.substr($phoneNumber, $offset, 3).$bracketR.substr($phoneNumber, ($offset+3), 3).$separator.substr($phoneNumber, ($offset+6), 4);
-			return $phoneNumber;
 		}
+		return $phoneNumber;
 	}
 
 	/**
@@ -246,34 +246,16 @@ class TetraText {
 	}
 
 	/**
-	 * Convert entities to HTML special characters.
+	 * Convert HTML characters to entities.
 	 *
-	 * The encoding specified in the application configuration file will be used. An option exists to keep HTML tags intact.
+	 * The encoding specified in the application configuration file will be used.
 	 *
-	 * @param  string  $string
-	 * @param  boolean $preserveHTML
+	 * @param  string  $value
 	 * @return string
 	 */
-	public static function entities($string, $preserveHTML = false)
+	public static function entities($value)
 	{
-		if ($preserveHTML) $string = str_replace('<', '[TAG-LEFT]', str_replace('>', '[TAG-RIGHT]', $string));
-		$string = htmlentities($string, ENT_QUOTES, Config::get('tetra-text::encoding'), false);
-		if ($preserveHTML) $string = str_replace('[TAG-LEFT]', '<', str_replace('[TAG-RIGHT]', '>', $string));
-		return $string;
-	}
-
-	/**
-	 * Ensure a string has a trailing slash.
-	 *
-	 * @param  string  $string
-	 * @return string
-	 */
-	public static function trailingSlash($string)
-	{
-		if ($string != "" && substr($string, -1) != "/") {    
-			$string .= "/";
-		}
-		return $string;
+		return htmlentities($value, ENT_QUOTES, Config::get('tetra-text::encoding'), false);
 	}
 
 	/**
@@ -465,38 +447,6 @@ class TetraText {
 	public static function nl2p($string)
 	{
 		return trim(str_replace('<p></p>', '', str_replace("\n", '</p><p>', str_replace("\n\n", '</p><p>', $string))));
-	}
-
-	/**
-	 * Separate a string into paragraphs.
-	 *
-	 * @param  string  $string
-	 * @return string
-	 */
-	public static function paragraphs($string)
-	{
-		return '<p>'.static::nl2p($string).'</p>';
-	}
-
-	/**
-	 * Limit a string to a number of characters.
-	 *
-	 * @param  string  $string
-	 * @param  string  $characters
-	 * @param  string  $end
-	 * @param  mixed   $endLink
-	 * @param  boolean $paragraphs
-	 * @return string
-	 */
-	public static function charLimit($string = '', $characters = 140, $end = '...', $endLink = false, $paragraphs = false)
-	{
-		$formattedString = substr($string, 0, $characters);
-		if ($formattedString != $string) {
-			if ($endLink) {$end = '<a href="'.URL::to($endLink).'">'.$end.'</a>';
-			$formattedString .= $end;
-		}
-		if ($paragraphs) $formattedString = static::paragraphs($formattedString);
-		return $formattedString;
 	}
 
 	/**
