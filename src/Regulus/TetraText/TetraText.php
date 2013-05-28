@@ -9,6 +9,7 @@
 		last updated on May 23, 2013
 ----------------------------------------------------------------------------------------------------------*/
 
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Str;
 
@@ -256,6 +257,37 @@ class TetraText {
 	public static function entities($value)
 	{
 		return htmlentities($value, ENT_QUOTES, Config::get('tetra-text::encoding'), false);
+	}
+
+	/**
+	 * Create a URI slug from a string. You may optionally limit the number of characters.
+	 *
+	 * @param  string  $string
+	 * @param  string  $table
+	 * @param  string  $fieldName
+	 * @param  integer $charLimit
+	 * @return string
+	 */
+	public static function uniqueSlug($string, $table, $fieldName = 'slug', $charLimit = 0)
+	{
+		$slug = trim(strtolower(str_replace('--', '-', str_replace(' ', '-', str_replace('_', '-', $string)))));
+		if ($charLimit) $slug = substr($slug, 0, $charLimit);
+
+		$exists = DB::table($table)->where($fieldName, '=', $slug)->count();
+		if ($exists) {
+			$uniqueFound = false;
+			if ($charLimit) $slug = substr($slug, 0, ($charLimit - 2));
+			for ($s = 2; $s <= 99; $s++) {
+				if (!$uniqueFound) {
+					$slug .= $s;
+					$exists = DB::table($table)->where($fieldName, '=', $slug)->count();
+					if (!$exists) $uniqueFound = true;
+				}
+			}
+			if (!$uniqueFound) return false;
+		}
+
+		return $slug;
 	}
 
 	/**
