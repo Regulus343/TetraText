@@ -6,7 +6,7 @@
 		money values and more. There are also some limited date functions available.
 
 		created by Cody Jassman
-		last updated on May 23, 2013
+		last updated on May 28, 2013
 ----------------------------------------------------------------------------------------------------------*/
 
 use Illuminate\Support\Facades\DB;
@@ -265,10 +265,10 @@ class TetraText {
 	 * @param  string  $string
 	 * @param  string  $table
 	 * @param  string  $fieldName
-	 * @param  integer $charLimit
+	 * @param  mixed   $charLimit
 	 * @return string
 	 */
-	public static function uniqueSlug($string, $table, $fieldName = 'slug', $charLimit = 0)
+	public static function uniqueSlug($string, $table, $charLimit = false, $fieldName = 'slug')
 	{
 		$slug = trim(strtolower(str_replace('--', '-', str_replace(' ', '-', str_replace('_', '-', $string)))));
 		if ($charLimit) $slug = substr($slug, 0, $charLimit);
