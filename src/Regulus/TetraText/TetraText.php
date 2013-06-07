@@ -6,7 +6,7 @@
 		money values and more. There are also some limited date functions available.
 
 		created by Cody Jassman
-		last updated on June 6, 2013
+		last updated on June 7, 2013
 ----------------------------------------------------------------------------------------------------------*/
 
 use Illuminate\Support\Facades\DB;
@@ -260,40 +260,52 @@ class TetraText {
 	}
 
 	/**
-	 * Create a URI slug from a string. You may optionally limit the number of characters.
+	 * Create a URI slug from a string.
 	 *
 	 * @param  string  $string
-	 * @param  mixed   $table
 	 * @param  mixed   $charLimit
-	 * @param  string  $fieldName
-	 * @return mixed
+	 * @return string
 	 */
-	public static function uniqueSlug($string, $table = false, $charLimit = false, $fieldName = 'slug')
+	public static function slug($string, $charLimit = false)
 	{
 		$slug = Str::slug(strtr(
 			$slug,
 			'`!@#$%^&*()-_=+[]{}<>,.?/|:;\'"',
 			'                               ',
 		));
+
 		if ($charLimit) {
 			$slug = substr($slug, 0, $charLimit);
 			if (substr($slug, -1) == "-") $slug = substr($slug, 0, (strlen($slug) - 1));
 		}
+		return $slug;
+	}
 
-		if ($table) {
-			$exists = DB::table($table)->where($fieldName, '=', $slug)->count();
-			if ($exists) {
-				$uniqueFound = false;
-				if ($charLimit) $slug = substr($slug, 0, ($charLimit - 2));
-				for ($s = 2; $s <= 99; $s++) {
-					if (!$uniqueFound) {
-						$slug .= $s;
-						$exists = DB::table($table)->where($fieldName, '=', $slug)->count();
-						if (!$exists) $uniqueFound = true;
-					}
+	/**
+	 * Create a unique URI slug from a string. You may optionally limit the number of characters.
+	 *
+	 * @param  string  $string
+	 * @param  string  $table
+	 * @param  mixed   $charLimit
+	 * @param  string  $fieldName
+	 * @return mixed
+	 */
+	public static function uniqueSlug($string, $table, $charLimit = false, $fieldName = 'slug')
+	{
+		$slug = static::slug($string, $charLimit);
+
+		$exists = DB::table($table)->where($fieldName, '=', $slug)->count();
+		if ($exists) {
+			$uniqueFound = false;
+			if ($charLimit) $slug = substr($slug, 0, ($charLimit - 2));
+			for ($s = 2; $s <= 99; $s++) {
+				if (!$uniqueFound) {
+					$slug .= $s;
+					$exists = DB::table($table)->where($fieldName, '=', $slug)->count();
+					if (!$exists) $uniqueFound = true;
 				}
-				if (!$uniqueFound) return false;
 			}
+			if (!$uniqueFound) return false;
 		}
 
 		return $slug;
