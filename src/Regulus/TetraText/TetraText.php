@@ -263,28 +263,37 @@ class TetraText {
 	 * Create a URI slug from a string. You may optionally limit the number of characters.
 	 *
 	 * @param  string  $string
-	 * @param  string  $table
-	 * @param  string  $fieldName
+	 * @param  mixed   $table
 	 * @param  mixed   $charLimit
-	 * @return string
+	 * @param  string  $fieldName
+	 * @return mixed
 	 */
-	public static function uniqueSlug($string, $table, $charLimit = false, $fieldName = 'slug')
+	public static function uniqueSlug($string, $table = false, $charLimit = false, $fieldName = 'slug')
 	{
-		$slug = trim(strtolower(str_replace('--', '-', str_replace(' ', '-', str_replace('_', '-', $string)))));
-		if ($charLimit) $slug = substr($slug, 0, $charLimit);
+		$slug = Str::slug(strtr(
+			$slug,
+			'`!@#$%^&*()-_=+[]{}<>,.?/|:;\'"',
+			'                               ',
+		));
+		if ($charLimit) {
+			$slug = substr($slug, 0, $charLimit);
+			if (substr($slug, -1) == "-") $slug = substr($slug, 0, (strlen($slug) - 1));
+		}
 
-		$exists = DB::table($table)->where($fieldName, '=', $slug)->count();
-		if ($exists) {
-			$uniqueFound = false;
-			if ($charLimit) $slug = substr($slug, 0, ($charLimit - 2));
-			for ($s = 2; $s <= 99; $s++) {
-				if (!$uniqueFound) {
-					$slug .= $s;
-					$exists = DB::table($table)->where($fieldName, '=', $slug)->count();
-					if (!$exists) $uniqueFound = true;
+		if ($table) {
+			$exists = DB::table($table)->where($fieldName, '=', $slug)->count();
+			if ($exists) {
+				$uniqueFound = false;
+				if ($charLimit) $slug = substr($slug, 0, ($charLimit - 2));
+				for ($s = 2; $s <= 99; $s++) {
+					if (!$uniqueFound) {
+						$slug .= $s;
+						$exists = DB::table($table)->where($fieldName, '=', $slug)->count();
+						if (!$exists) $uniqueFound = true;
+					}
 				}
+				if (!$uniqueFound) return false;
 			}
-			if (!$uniqueFound) return false;
 		}
 
 		return $slug;
