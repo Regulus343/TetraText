@@ -269,9 +269,9 @@ class TetraText {
 	public static function slug($string, $charLimit = false)
 	{
 		$slug = Str::slug(strtr(
-			$slug,
-			'`!@#$%^&*()-_=+[]{}<>,.?/|:;\'"',
-			'                               ',
+			$string,
+			'`!@#$%^&*()-_=+[]{}<>,.?/|:;\\\'"',
+			'                               '
 		));
 
 		if ($charLimit) {
