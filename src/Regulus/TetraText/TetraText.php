@@ -6,7 +6,7 @@
 		money values and more. There are also some limited date functions available.
 
 		created by Cody Jassman
-		last updated on May 28, 2013
+		last updated on June 6, 2013
 ----------------------------------------------------------------------------------------------------------*/
 
 use Illuminate\Support\Facades\DB;
@@ -329,40 +329,59 @@ class TetraText {
 	 * Get the first day of the month. This function is just here for the sake of completeness.
 	 *
 	 * @param  string  $date
-	 * @param  string  $firstDay
+	 * @param  string  $format
 	 * @return string
 	 */
-	public static function firstDayOfMonth($date = 'current')
+	public static function firstDayOfMonth($date = 'current', $format = false)
 	{
 		if ($date == "current") {
-			return date('Y-m-01');
+			$result = date('Y-m-01');
 		} else {
-			return date('Y-m-01', strtotime($date));
+			$result = date('Y-m-01', strtotime($date));
 		}
+
+		if ($format) $result = static::date($result, $format);
+		return $result;
 	}
 
 	/**
-	 * Get the last day of the month.
+	 * Get the last day of the month. You can use the second argument to format the date (example: "F j, Y").
 	 *
 	 * @param  string  $date
-	 * @param  string  $firstDay
+	 * @param  mixed   $format
 	 * @return string
 	 */
-	public static function lastDayOfMonth($date = 'current')
+	public static function lastDayOfMonth($date = 'current', $format = false)
 	{
-		if ($date == "current") { $date = date('Y-m-d'); } else { $originalMonth = substr($date, 5, 2); $date = date('Y-m-d', strtotime($date)); }
+		if ($date == "current") {
+			$date = date('Y-m-d');
+		} else {
+			$date = date('Y-m-d', strtotime($date));
+			$originalMonth = substr($date, 5, 2);
+		}
 		$year = substr($date, 0, 4); $month = substr($date, 5, 2); $day = substr($date, 8, 2); $result = "";
 		if (isset($originalMonth) && $month != $originalMonth) $month = $originalMonth; //prevent invalid dates having wrong month assigned (June 31 = July, etc...)
-		if ($month == "01" || $month == "03" || $month == "05" || $month == "07" || $month == "08" || $month == "10" || $month == "12") { $result = $year.'-'.$month.'-31'; } 
-		else if ($month == "04" || $month == "06" || $month == "09" || $month == "11") { $result = $year.'-'.$month.'-30'; } 
-		else if ($month == "02") {
+		if ($month == "01" || $month == "03" || $month == "05" || $month == "07" || $month == "08" || $month == "10" || $month == "12") {
+			$result = $year.'-'.$month.'-31';
+		} else if ($month == "04" || $month == "06" || $month == "09" || $month == "11") {
+			$result = $year.'-'.$month.'-30';
+		} else if ($month == "02") {
 			if (($year/4) == round($year/4)) {
 				if (($year/100) == round($year/100)) {
-					if (($year/400) == round($year/400)) { $result = $year.'-'.$month.'-29'; } 
-					else { $result = $year.'-'.$month.'-28'; }
-				} else { $result = $year.'-'.$month.'-29'; }
-			} else { $result = $year.'-'.$month.'-28'; }
+					if (($year/400) == round($year/400)) {
+						$result = $year.'-'.$month.'-29';
+					} else {
+						$result = $year.'-'.$month.'-28';
+					}
+				} else {
+					$result = $year.'-'.$month.'-29';
+				}
+			} else {
+				$result = $year.'-'.$month.'-28';
+			}
 		}
+
+		if ($format) $result = static::date($result, $format);
 		return $result;
 	}
 
