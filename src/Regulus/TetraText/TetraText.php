@@ -6,7 +6,7 @@
 		money values and more. There are also some limited date functions available.
 
 		created by Cody Jassman
-		last updated on June 7, 2013
+		last updated on June 17, 2013
 ----------------------------------------------------------------------------------------------------------*/
 
 use Illuminate\Support\Facades\DB;
@@ -286,22 +286,33 @@ class TetraText {
 	 *
 	 * @param  string  $string
 	 * @param  string  $table
+	 * @param  mixed   $ignoreID
 	 * @param  mixed   $charLimit
 	 * @param  string  $fieldName
 	 * @return mixed
 	 */
-	public static function uniqueSlug($string, $table, $charLimit = false, $fieldName = 'slug')
+	public static function uniqueSlug($string, $table, $ignoreID = false, $charLimit = false, $fieldName = 'slug')
 	{
 		$slug = static::slug($string, $charLimit);
 
-		$exists = DB::table($table)->where($fieldName, '=', $slug)->count();
-		if ($exists) {
+		if ($ignoreID) {
+			$exists = DB::table($table)->where($fieldName, '=', $slug)->where('id', '!=', $ignoreID)->count();
+		} else {
+			$exists = DB::table($table)->where($fieldName, '=', $slug)->count();
+		}
+		if ((int) $exists) {
 			$uniqueFound = false;
 			if ($charLimit) $slug = substr($slug, 0, ($charLimit - 2));
+			$originalSlug = $slug;
 			for ($s = 2; $s <= 99; $s++) {
 				if (!$uniqueFound) {
-					$slug .= $s;
-					$exists = DB::table($table)->where($fieldName, '=', $slug)->count();
+					$slug  = $originalSlug;
+					$slug .= '-'.$s;
+					if ($ignoreID) {
+						$exists = DB::table($table)->where($fieldName, '=', $slug)->where('id', '!=', $ignoreID)->count();
+					} else {
+						$exists = DB::table($table)->where($fieldName, '=', $slug)->count();
+					}
 					if (!$exists) $uniqueFound = true;
 				}
 			}
@@ -548,7 +559,7 @@ class TetraText {
 	{
 		$formattedString = substr($string, 0, $characters);
 		if ($formattedString != $string) {
-			if ($endLink) $end = '<a href="'.URL::to($endLink).'">'.$end.'</a>';
+			if ($endLink) $end = '<a href="'.$endLink.'" class="read-more">'.$end.'</a>';
 			$formattedString .= $end;
 		}
 		if ($paragraphs) $formattedString = static::paragraphs($formattedString);
