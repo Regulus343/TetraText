@@ -467,9 +467,9 @@ class TetraText {
 		} else {
 			if (!is_int($dateEnd))	$dateEnd = strtotime($dateEnd);
 		}
-		$date = array('number'=>	0,
-					  'interval'=>	'',
-			   		  'past'=>		false);
+		$date = array('number'   => 0,
+					  'interval' => '',
+			   		  'past'     => false);
 
 		$seconds = $dateEnd - $dateStart;
 		if ($seconds < 0) {
@@ -478,13 +478,15 @@ class TetraText {
 			$date['past'] = true;
 		}
 
-		$intervals = array('year'=>		31536000,
-						   'month'=>	2628000,
-						   'week'=>		604800,
-						   'day'=>		86400,
-						   'hour'=>		3600,
-						   'minute'=>	60,
-						   'second'=>	1);
+		$intervals = array(
+			'year'   => 31536000,
+			'month'  => 2628000,
+			'week'   => 604800,
+			'day'    => 86400,
+			'hour'   => 3600,
+			'minute' => 60,
+			'second' => 1,
+		);
 
 		foreach ($intervals as $interval => $intervalSeconds) {
 			$number = floor($seconds / $intervalSeconds);
@@ -529,7 +531,7 @@ class TetraText {
 	 */
 	public static function nl2p($string)
 	{
-		return str_replace('<p></p>', '', str_replace("\r\n", '</p><p>', str_replace("\r\n\r\n", '</p><p>', trim($string))));
+		return str_replace('<p></p>', '', str_replace("\r\n", '</p>X<p>', str_replace("\r\n\r\n", '</p><p>', trim($string))));
 	}
 
 	/**
