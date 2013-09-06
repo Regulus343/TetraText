@@ -6,7 +6,7 @@
 		money values and more. There are also some limited date functions available.
 
 		created by Cody Jassman
-		last updated on June 19, 2013
+		last updated on September 6, 2013
 ----------------------------------------------------------------------------------------------------------*/
 
 use Illuminate\Support\Facades\DB;
@@ -227,23 +227,53 @@ class TetraText {
 	}
 
 	/**
-	 * Pluralize a string containing "[word]" and "[number]" which will automatically be replaced.
+	 * Pluralize a string containing ":item" and ":number" which will automatically be replaced.
 	 *
-	 * @param  string  $message
+	 * @param  string  $singular
 	 * @param  integer $number
-	 * @param  string  $string
 	 * @param  string  $plural
 	 * @return string
 	 */
-	public static function pluralize($message, $number, $singular = 'result', $plural = false)
+	public static function pluralize($singular = 'result', $number = 1, $plural = false)
 	{
-		if (!$plural) $plural = Str::plural($singular);
-		$message = str_replace('[number]', $number, $message);
 		if ($number == 1) {
-			return str_replace('[word]', $singular, $message);
+			return $singular;
 		} else {
-			return str_replace('[word]', $plural, $message);
+			if (!$plural) $plural = Str::plural($singular);
+
+			return $plural;
 		}
+	}
+
+	/**
+	 * Pluralize a string containing ":item" and ":number" which will automatically be replaced.
+	 *
+	 * @param  string  $message
+	 * @param  string  $singular
+	 * @param  integer $number
+	 * @param  string  $plural
+	 * @return string
+	 */
+	public static function pluralizeMessage($message, $singular = 'result', $number = 1, $plural = false)
+	{
+		$item = static::pluralize($singular, $number, $plural);
+		$message = str_replace(':number', $number, str_replace(':item', $item, $message));
+	}
+
+	/**
+	 * Add "a" or "an" to prefix to word based on whether it begins with a vowel.
+	 *
+	 * @param  string  $item
+	 * @return string
+	 */
+	public static function a($item)
+	{
+		$itemFormatted = strtolower($item);
+		$prefix = 'a';
+		if (in_array(substr($itemFormatted, 0, 1), array('a', 'e', 'i', 'o', 'u')))
+			$prefix .= 'n';
+
+		return $prefix.' '.$item;
 	}
 
 	/**
