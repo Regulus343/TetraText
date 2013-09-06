@@ -299,15 +299,17 @@ class TetraText {
 	public static function slug($string, $charLimit = false)
 	{
 		$slug = Str::slug(strtr(
-			$string,
+			trim($string),
 			'`!@#$%^&*()-_=+[]{}<>,.?/|:;\\\'"',
 			'                               '
 		));
 
-		if ($charLimit) {
+		if ($charLimit)
 			$slug = substr($slug, 0, $charLimit);
-			if (substr($slug, -1) == "-") $slug = substr($slug, 0, (strlen($slug) - 1));
-		}
+
+		if (substr($slug, -1) == "-")
+			$slug = substr($slug, 0, (strlen($slug) - 1));
+
 		return $slug;
 	}
 
