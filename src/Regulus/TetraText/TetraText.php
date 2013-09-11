@@ -6,7 +6,7 @@
 		money values and more. There are also some limited date functions available.
 
 		created by Cody Jassman
-		last updated on September 6, 2013
+		last updated on September 10, 2013
 ----------------------------------------------------------------------------------------------------------*/
 
 use Illuminate\Support\Facades\DB;
@@ -563,7 +563,7 @@ class TetraText {
 	 */
 	public static function nl2p($string)
 	{
-		return str_replace('<p></p>', '', str_replace("\r\n", '</p>X<p>', str_replace("\r\n\r\n", '</p><p>', trim($string))));
+		return str_replace('<p></p>', '', str_replace("\r\n", '</p><p>', str_replace("\r\n\r\n", '</p><p>', trim($string))));
 	}
 
 	/**
