@@ -18,8 +18,7 @@ use \HTMLPurifier;
 class TetraText {
 
 	/**
-	 * Remove all non-numeric characters from a string
-	 * the dollar symbol to the right of the minus for a negative value ("-$33.00").
+	 * Remove all non-numeric characters from a string.
 	 *
 	 * @param  float   $value
 	 * @param  boolean $allowDecimal
