@@ -170,16 +170,16 @@ You may pass the `phone()` function a string or an integer. It will automaticall
 **Convert a string to a unique URI slug based on the specified table and field name:**
 
 	//may output "turn-this-title-into-a-slug-2" if "blog_posts" table already has a row with slug
-	echo Format::uniqueSlug(''Turn This Title Into a Slug!', 'blog_posts');
+	echo Format::uniqueSlug('Turn This Title Into a Slug!', 'blog_posts');
 
 	//set an ID to ignore/prevent slug conflicts for (ID of table row being edited)
-	echo Format::uniqueSlug(''Turn This Title Into a Slug!', 'blog_posts', 3);
+	echo Format::uniqueSlug('Turn This Title Into a Slug!', 'blog_posts', 3);
 
 	//set a character limit for the slug
-	echo Format::uniqueSlug(''Turn This Title Into a Slug!', 'blog_posts', 3, 52);
+	echo Format::uniqueSlug('Turn This Title Into a Slug!', 'blog_posts', 3, 52);
 
 	//use a different field than "slug" in DB table
-	echo Format::uniqueSlug(''Turn This Title Into a Slug!', 'blog_posts', 3, false, 'uri_tag');
+	echo Format::uniqueSlug('Turn This Title Into a Slug!', 'blog_posts', 3, false, 'uri_tag');
 
 **Get the first day of a week:**
 
@@ -210,7 +210,7 @@ You may pass the `phone()` function a string or an integer. It will automaticall
 **Convert new lines to paragraphs:**
 
 	//will output "<p>This is the first paragraph.</p><p>This is the second paragraph.</p>"
-	echo Format::paragraphs("This is the first paragraph.\nThis is the second paragraph."");
+	echo Format::paragraphs("This is the first paragraph.\nThis is the second paragraph.");
 
 **Apply a character limit to a string:**
 
@@ -222,8 +222,8 @@ You may pass the `phone()` function a string or an integer. It will automaticall
 	//will output "This is a not-very-long stri"
 	echo Format::charLimit($string, 24, false);
 
-	//will output 'This is a not-very-long stri<a href="http://website.com/articles/test-article" class="read-more">read more</a>''
+	//will output 'This is a not-very-long stri<a href="http://website.com/articles/test-article" class="read-more">read more</a>'
 	echo Format::charLimit($string, 24, 'read more', 'http://website.com/articles/test-article');
 
-	//may output 'This is a not-very-long stri<a href="http://website.com/articles/test-article" class="read-more">read more</a>''
+	//may output 'This is a not-very-long stri<a href="http://website.com/articles/test-article" class="read-more">read more</a>'
 	echo Format::charLimit($string, 24, 'read more', 'article/test-article');
