@@ -183,7 +183,7 @@ class TetraText {
 	{
 		$str = "";
 		foreach ($list as $key => $value) {
-			if (!is_numeric($key) && (is_bool($value) || is_numeric($value)) {
+			if (!is_numeric($key) && (is_bool($value) || is_numeric($value))) {
 				if ($value) {
 					if ($str == "") {
 						$str = $key;
@@ -285,7 +285,7 @@ class TetraText {
 
 		//use "an" if item is an acronym and starts with a letter that has a vowel sound
 		if (substr($item, 0, 2) == substr(strtoupper($item), 0, 2)
-		&& in_array(substr($itemFormatted, 0, 1), array('a', 'e', 'f', 'h', 'i', 'l', 'm', 'n', 'o', 'r', 's', 'x'))
+		&& in_array(substr($itemFormatted, 0, 1), array('a', 'e', 'f', 'h', 'i', 'l', 'm', 'n', 'o', 'r', 's', 'x')))
 			$prefix .= 'n';
 
 		return $prefix.' '.$item;
