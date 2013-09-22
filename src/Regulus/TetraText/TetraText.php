@@ -6,12 +6,13 @@
 		money values and more. There are also some limited date functions available.
 
 		created by Cody Jassman
-		last updated on September 10, 2013
+		last updated on September 21, 2013
 ----------------------------------------------------------------------------------------------------------*/
 
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\URL;
 
 use \HTMLPurifier;
 
@@ -135,14 +136,22 @@ class TetraText {
 	 * Format a Canadian postal code.
 	 *
 	 * @param  string  $postalCode
+	 * @param  boolean $separateWithSpace
 	 * @return string
 	 */
-	public static function postalCode($postalCode = '')
+	public static function postalCode($postalCode = '', $separateWithSpace = true)
 	{
+		if ($separateWithSpace) {
+			$separator = " ";
+			$length    = 7;
+		} else {
+			$separator = "";
+			$length    = 6;
+		}
 		$postalCode = strtoupper(str_replace(' ', '', $postalCode));
-		$postalCode = substr($postalCode, 0, 3).' '.substr($postalCode, 3, 3);
+		$postalCode = substr($postalCode, 0, 3).$separator.substr($postalCode, 3, 3);
 		$postalCode = substr($postalCode, 0, 7);
-		if (strlen($postalCode) != 7) $postalCode = "";
+		if (strlen($postalCode) != $length) $postalCode = "";
 		return $postalCode;
 	}
 
@@ -155,7 +164,7 @@ class TetraText {
 	 */
 	public static function boolToStr($value, $type = 'Yes/No')
 	{
-		$type = explode('/', $type);
+		if (is_string($type)) $type = explode('/', $type);
 		if (!isset($type[1])) $type[1] = "";
 		if ($value)
 			return $type[0];
@@ -174,7 +183,7 @@ class TetraText {
 	{
 		$str = "";
 		foreach ($list as $key => $value) {
-			if (!is_numeric($key) && is_numeric($value)) {
+			if (!is_numeric($key) && (is_bool($value) || is_numeric($value)) {
 				if ($value) {
 					if ($str == "") {
 						$str = $key;
@@ -194,7 +203,7 @@ class TetraText {
 	}
 
 	/**
-	 * Turn an object into a string of items based on a given attribute or method.
+	 * Turn a collection of objects into a string list of items based on a given attribute or method.
 	 *
 	 * @param  object  $obj
 	 * @param  string  $item
@@ -269,7 +278,14 @@ class TetraText {
 	{
 		$itemFormatted = strtolower($item);
 		$prefix = 'a';
+
+		//use "an" if item begins with a vowel
 		if (in_array(substr($itemFormatted, 0, 1), array('a', 'e', 'i', 'o', 'u')))
+			$prefix .= 'n';
+
+		//use "an" if item is an acronym and starts with a letter that has a vowel sound
+		if (substr($item, 0, 2) == substr(strtoupper($item), 0, 2)
+		&& in_array(substr($itemFormatted, 0, 1), array('a', 'e', 'f', 'h', 'i', 'l', 'm', 'n', 'o', 'r', 's', 'x'))
 			$prefix .= 'n';
 
 		return $prefix.' '.$item;
@@ -588,11 +604,27 @@ class TetraText {
 	 * @param  boolean $paragraphs
 	 * @return string
 	 */
-	public static function charLimit($string = '', $characters = 140, $end = '...', $endLink = false, $paragraphs = false)
+	public static function charLimit($string = '', $characters = 140, $end = true, $endLink = false, $paragraphs = false)
 	{
+		//if end is set to null or false, set it to an empty string
+		if (is_null($end) || (is_bool($end) && !$end))
+			$end = "";
+
+		//if end is set to true, use "..." as a default
+		if (is_bool($end) && $end)
+			$end = "...";
+
+		//convert HTML special characters if end string is not HTML
+		if ($end == strip_tags($end))
+			$end = static::entities($end);
+
+		//if end link is not a full URL, convert it into one
+		if ($endLink && substr($end, 0, 4) != "http")
+			$endLink = URL::to($endLink);
+
 		$formattedString = substr($string, 0, $characters);
 		if ($formattedString != $string) {
-			if ($endLink) $end = '<a href="'.$endLink.'" class="read-more">'.$end.'</a>';
+			if ($endLink) $end = ' <a href="'.$endLink.'" class="read-more">'.$end.'</a>';
 			$formattedString .= $end;
 		}
 		if ($paragraphs) $formattedString = static::paragraphs($formattedString);
@@ -600,7 +632,7 @@ class TetraText {
 	}
 
 	/**
-	 * Get a random MD5 hash.
+	 * Get a random MD5-hashed string at a specified length.
 	 *
 	 * @param  integer $length
 	 * @return string
