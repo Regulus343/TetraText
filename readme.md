@@ -222,8 +222,8 @@ You may pass the `phone()` function a string or an integer. It will automaticall
 	//will output "This is a not-very-long stri"
 	echo Format::charLimit($string, 24, false);
 
-	//will output 'This is a not-very-long stri<a href="http://website.com/article/test-article" class="read-more">read more</a>''
-	echo Format::charLimit($string, 24, 'read more', 'http://website.com/article/test-article');
+	//will output 'This is a not-very-long stri<a href="http://website.com/articles/test-article" class="read-more">read more</a>''
+	echo Format::charLimit($string, 24, 'read more', 'http://website.com/articles/test-article');
 
-	//may output 'This is a not-very-long stri<a href="http://website.com/article/test-article" class="read-more">read more</a>''
+	//may output 'This is a not-very-long stri<a href="http://website.com/articles/test-article" class="read-more">read more</a>''
 	echo Format::charLimit($string, 24, 'read more', 'article/test-article');
