@@ -6,7 +6,7 @@
 		money values and more. There are also some limited date functions available.
 
 		created by Cody Jassman
-		last updated on September 21, 2013
+		last updated on September 27, 2013
 ----------------------------------------------------------------------------------------------------------*/
 
 use Illuminate\Support\Facades\DB;
@@ -96,6 +96,45 @@ class TetraText {
 
 		if (!$returnNumeric) $percent .= '%';
 		return $percent;
+	}
+
+	/**
+	 * Format a name (adjust for CAPS LOCK and uncapitalized names).
+	 *
+	 * @param  string  $name
+	 * @return string
+	 */
+	public static function name($name = '')
+	{
+		$name = trim($name);
+		if ($name == strtoupper($name)) $name = strtolower($name);
+		$name = ucfirst($name);
+		return $name;
+	}
+
+	/**
+	 * Format a title.
+	 *
+	 * @param  string  $title
+	 * @return string
+	 */
+	public static function title($title = '')
+	{
+		$title = ucwords(static::name($title));
+		$lowercaseWords = array(
+			'a',
+			'an',
+			'the',
+			'of',
+			'at',
+			'in',
+		);
+
+		foreach ($lowercaseWords as $word) {
+			$title = str_replace(' '.ucfirst($word).' ', ' '.$word.' ', $title); //make word lowercase
+			$title = str_replace(': '.$word.' ', ': '.ucfirst($word).' ', $title); //change word back if it is preceded by colon
+		}
+		return $title;
 	}
 
 	/**
