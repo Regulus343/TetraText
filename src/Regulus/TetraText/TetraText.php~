@@ -6,12 +6,11 @@
 		money values and more. There are also some limited date functions available.
 
 		created by Cody Jassman
-		last updated on January 1, 2014
+		last updated on September 27, 2013
 ----------------------------------------------------------------------------------------------------------*/
 
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Config;
-use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\URL;
 
@@ -369,61 +368,36 @@ class TetraText {
 	}
 
 	/**
-	 * Create a unique URI slug from a string.
+	 * Create a unique URI slug from a string. You may optionally limit the number of characters.
 	 *
 	 * @param  string  $string
 	 * @param  string  $table
-	 * @param  string  $fieldName
 	 * @param  mixed   $ignoreID
 	 * @param  mixed   $charLimit
+	 * @param  string  $fieldName
 	 * @return mixed
 	 */
-	public static function uniqueSlug($string, $table, $fieldName = 'slug', $ignoreID = false, $charLimit = false)
+	public static function uniqueSlug($string, $table, $ignoreID = false, $charLimit = false, $fieldName = 'slug')
 	{
 		$slug = static::slug($string, $charLimit);
-		return static::unique($slug, $table, $fieldName, $ignoreID, false, $charLimit);
-	}
 
-	/**
-	 * Create a unique string for a table field. You may optionally limit the number of characters.
-	 *
-	 * @param  string  $string
-	 * @param  string  $table
-	 * @param  string  $fieldName
-	 * @param  mixed   $ignoreID
-	 * @param  boolean $filename
-	 * @param  mixed   $charLimit
-	 * @return mixed
-	 */
-	public static function unique($string, $table, $fieldName = 'name', $ignoreID = false, $filename = false, $charLimit = false)
-	{
 		if ($ignoreID) {
-			$exists = DB::table($table)->where($fieldName, '=', $string)->where('id', '!=', $ignoreID)->count();
+			$exists = DB::table($table)->where($fieldName, '=', $slug)->where('id', '!=', $ignoreID)->count();
 		} else {
-			$exists = DB::table($table)->where($fieldName, '=', $string)->count();
+			$exists = DB::table($table)->where($fieldName, '=', $slug)->count();
 		}
-
-		$extension = $filename ? File::extension($string) : '';
-
 		if ((int) $exists) {
 			$uniqueFound = false;
-			if ($charLimit) $string = substr($string, 0, ($charLimit - 2));
-			$originalString = $string;
+			if ($charLimit) $slug = substr($slug, 0, ($charLimit - 2));
+			$originalSlug = $slug;
 			for ($s = 2; $s <= 99; $s++) {
 				if (!$uniqueFound) {
-					$string = $originalString;
-					$suffix = '-'.$s;
-
-					if ($filename) {
-						$string = str_replace('.'.$extension, '', $string).$suffix.'.'.$extension;
-					} else {
-						$string .= $suffix;
-					}
-
+					$slug  = $originalSlug;
+					$slug .= '-'.$s;
 					if ($ignoreID) {
-						$exists = DB::table($table)->where($fieldName, '=', $string)->where('id', '!=', $ignoreID)->count();
+						$exists = DB::table($table)->where($fieldName, '=', $slug)->where('id', '!=', $ignoreID)->count();
 					} else {
-						$exists = DB::table($table)->where($fieldName, '=', $string)->count();
+						$exists = DB::table($table)->where($fieldName, '=', $slug)->count();
 					}
 					if (!$exists) $uniqueFound = true;
 				}
@@ -431,7 +405,7 @@ class TetraText {
 			if (!$uniqueFound) return false;
 		}
 
-		return $string;
+		return $slug;
 	}
 
 	/**
