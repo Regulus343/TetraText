@@ -6,21 +6,20 @@
 		money values and more. There are also some limited date functions available.
 
 		created by Cody Jassman
-		last updated on January 1, 2014
+		last updated on January 3, 2014
 ----------------------------------------------------------------------------------------------------------*/
 
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Config;
-use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
-use Illuminate\Support\Facades\URL;
 
 use \HTMLPurifier;
 
 class TetraText {
 
 	/**
-	 * Remove all non-numeric characters from a string.
+	 * Remove all non-numeric characters from a string
+	 * the dollar symbol to the right of the minus for a negative value ("-$33.00").
 	 *
 	 * @param  float   $value
 	 * @param  boolean $allowDecimal
@@ -30,7 +29,7 @@ class TetraText {
 	public static function numeric($value, $allowDecimal = true, $allowNegative = false)
 	{
 		$formatted = "";
-		for ($n=0; $n < strlen($value); $n++) {
+		for ($n = 0; $n < strlen($value); $n++) {
 			if ($allowDecimal == false) {
 				if (is_numeric(substr($value, $n, 1)) || ($allowNegative && $n == 0 && substr($value, 0, 1) == '-')) {
 					$formatted .= substr($value, $n, 1);
@@ -107,35 +106,11 @@ class TetraText {
 	 */
 	public static function name($name = '')
 	{
-		$name = trim($name);
-		if ($name == strtoupper($name)) $name = strtolower($name);
-		$name = ucfirst($name);
-		return $name;
-	}
+		$nameFormatted = trim($nameFormatted);
+		if ($nameFormatted == strtoupper($nameFormatted)) $nameFormatted = strtolower($nameFormatted);
+		$nameFormatted = ucfirst($nameFormatted);
 
-	/**
-	 * Format a title.
-	 *
-	 * @param  string  $title
-	 * @return string
-	 */
-	public static function title($title = '')
-	{
-		$title = ucwords(static::name($title));
-		$lowercaseWords = array(
-			'a',
-			'an',
-			'the',
-			'of',
-			'at',
-			'in',
-		);
-
-		foreach ($lowercaseWords as $word) {
-			$title = str_replace(' '.ucfirst($word).' ', ' '.$word.' ', $title); //make word lowercase
-			$title = str_replace(': '.$word.' ', ': '.ucfirst($word).' ', $title); //change word back if it is preceded by colon
-		}
-		return $title;
+		return $nameFormatted;
 	}
 
 	/**
@@ -176,23 +151,39 @@ class TetraText {
 	 * Format a Canadian postal code.
 	 *
 	 * @param  string  $postalCode
-	 * @param  boolean $separateWithSpace
 	 * @return string
 	 */
-	public static function postalCode($postalCode = '', $separateWithSpace = true)
+	public static function postalCode($postalCode = '')
 	{
-		if ($separateWithSpace) {
-			$separator = " ";
-			$length    = 7;
-		} else {
-			$separator = "";
-			$length    = 6;
-		}
 		$postalCode = strtoupper(str_replace(' ', '', $postalCode));
-		$postalCode = substr($postalCode, 0, 3).$separator.substr($postalCode, 3, 3);
+		$postalCode = substr($postalCode, 0, 3).' '.substr($postalCode, 3, 3);
 		$postalCode = substr($postalCode, 0, 7);
-		if (strlen($postalCode) != $length) $postalCode = "";
+		if (strlen($postalCode) != 7) $postalCode = "";
 		return $postalCode;
+	}
+
+	/**
+	 * Add a letter suffix to an integer ("1st", "2nd", "3rd", "4th").
+	 *
+	 * @param  integer $number
+	 * @return string
+	 */
+	public static function numberSuffix($number = 1)
+	{
+		$number = static::numeric($number, false);
+
+		$numberFormatted = $number.'th';
+
+		if ((int) substr($number, -1) == 1 && $number != 11)
+			$numberFormatted = $number.'st';
+
+		if ((int) substr($number, -1) == 2 && $number != 12)
+			$numberFormatted = $number.'nd';
+
+		if ((int) substr($number, -1) == 3 && $number != 13)
+			$numberFormatted = $number.'rd';
+
+		return $numberFormatted;
 	}
 
 	/**
@@ -204,7 +195,7 @@ class TetraText {
 	 */
 	public static function boolToStr($value, $type = 'Yes/No')
 	{
-		if (is_string($type)) $type = explode('/', $type);
+		$type = explode('/', $type);
 		if (!isset($type[1])) $type[1] = "";
 		if ($value)
 			return $type[0];
@@ -223,7 +214,7 @@ class TetraText {
 	{
 		$str = "";
 		foreach ($list as $key => $value) {
-			if (!is_numeric($key) && (is_bool($value) || is_numeric($value))) {
+			if (!is_numeric($key) && is_numeric($value)) {
 				if ($value) {
 					if ($str == "") {
 						$str = $key;
@@ -243,7 +234,7 @@ class TetraText {
 	}
 
 	/**
-	 * Turn a collection of objects into a string list of items based on a given attribute or method.
+	 * Turn an object into a string of items based on a given attribute or method.
 	 *
 	 * @param  object  $obj
 	 * @param  string  $item
@@ -275,60 +266,23 @@ class TetraText {
 	}
 
 	/**
-	 * Pluralize a string containing ":item" and ":number" which will automatically be replaced.
-	 *
-	 * @param  string  $singular
-	 * @param  integer $number
-	 * @param  string  $plural
-	 * @return string
-	 */
-	public static function pluralize($singular = 'result', $number = 1, $plural = false)
-	{
-		if ($number == 1) {
-			return $singular;
-		} else {
-			if (!$plural) $plural = Str::plural($singular);
-
-			return $plural;
-		}
-	}
-
-	/**
-	 * Pluralize a string containing ":item" and ":number" which will automatically be replaced.
+	 * Pluralize a string containing "[word]" and "[number]" which will automatically be replaced.
 	 *
 	 * @param  string  $message
-	 * @param  string  $singular
 	 * @param  integer $number
+	 * @param  string  $string
 	 * @param  string  $plural
 	 * @return string
 	 */
-	public static function pluralizeMessage($message, $singular = 'result', $number = 1, $plural = false)
+	public static function pluralize($message, $number, $singular = 'result', $plural = false)
 	{
-		$item = static::pluralize($singular, $number, $plural);
-		$message = str_replace(':number', $number, str_replace(':item', $item, $message));
-	}
-
-	/**
-	 * Add "a" or "an" to prefix to word based on whether it begins with a vowel.
-	 *
-	 * @param  string  $item
-	 * @return string
-	 */
-	public static function a($item)
-	{
-		$itemFormatted = strtolower($item);
-		$prefix = 'a';
-
-		//use "an" if item begins with a vowel
-		if (in_array(substr($itemFormatted, 0, 1), array('a', 'e', 'i', 'o', 'u')))
-			$prefix .= 'n';
-
-		//use "an" if item is an acronym and starts with a letter that has a vowel sound
-		if (substr($item, 0, 2) == substr(strtoupper($item), 0, 2)
-		&& in_array(substr($itemFormatted, 0, 1), array('a', 'e', 'f', 'h', 'i', 'l', 'm', 'n', 'o', 'r', 's', 'x')))
-			$prefix .= 'n';
-
-		return $prefix.' '.$item;
+		if (!$plural) $plural = Str::plural($singular);
+		$message = str_replace('[number]', $number, $message);
+		if ($number == 1) {
+			return str_replace('[word]', $singular, $message);
+		} else {
+			return str_replace('[word]', $plural, $message);
+		}
 	}
 
 	/**
@@ -354,76 +308,49 @@ class TetraText {
 	public static function slug($string, $charLimit = false)
 	{
 		$slug = Str::slug(strtr(
-			trim($string),
+			$string,
 			'`!@#$%^&*()-_=+[]{}<>,.?/|:;\\\'"',
 			'                               '
 		));
 
-		if ($charLimit)
+		if ($charLimit) {
 			$slug = substr($slug, 0, $charLimit);
-
-		if (substr($slug, -1) == "-")
-			$slug = substr($slug, 0, (strlen($slug) - 1));
-
+			if (substr($slug, -1) == "-") $slug = substr($slug, 0, (strlen($slug) - 1));
+		}
 		return $slug;
 	}
 
 	/**
-	 * Create a unique URI slug from a string.
+	 * Create a unique URI slug from a string. You may optionally limit the number of characters.
 	 *
 	 * @param  string  $string
 	 * @param  string  $table
-	 * @param  string  $fieldName
 	 * @param  mixed   $ignoreID
 	 * @param  mixed   $charLimit
+	 * @param  string  $fieldName
 	 * @return mixed
 	 */
-	public static function uniqueSlug($string, $table, $fieldName = 'slug', $ignoreID = false, $charLimit = false)
+	public static function uniqueSlug($string, $table, $ignoreID = false, $charLimit = false, $fieldName = 'slug')
 	{
 		$slug = static::slug($string, $charLimit);
-		return static::unique($slug, $table, $fieldName, $ignoreID, false, $charLimit);
-	}
 
-	/**
-	 * Create a unique string for a table field. You may optionally limit the number of characters.
-	 *
-	 * @param  string  $string
-	 * @param  string  $table
-	 * @param  string  $fieldName
-	 * @param  mixed   $ignoreID
-	 * @param  boolean $filename
-	 * @param  mixed   $charLimit
-	 * @return mixed
-	 */
-	public static function unique($string, $table, $fieldName = 'name', $ignoreID = false, $filename = false, $charLimit = false)
-	{
 		if ($ignoreID) {
-			$exists = DB::table($table)->where($fieldName, '=', $string)->where('id', '!=', $ignoreID)->count();
+			$exists = DB::table($table)->where($fieldName, '=', $slug)->where('id', '!=', $ignoreID)->count();
 		} else {
-			$exists = DB::table($table)->where($fieldName, '=', $string)->count();
+			$exists = DB::table($table)->where($fieldName, '=', $slug)->count();
 		}
-
-		$extension = $filename ? File::extension($string) : '';
-
 		if ((int) $exists) {
 			$uniqueFound = false;
-			if ($charLimit) $string = substr($string, 0, ($charLimit - 2));
-			$originalString = $string;
+			if ($charLimit) $slug = substr($slug, 0, ($charLimit - 2));
+			$originalSlug = $slug;
 			for ($s = 2; $s <= 99; $s++) {
 				if (!$uniqueFound) {
-					$string = $originalString;
-					$suffix = '-'.$s;
-
-					if ($filename) {
-						$string = str_replace('.'.$extension, '', $string).$suffix.'.'.$extension;
-					} else {
-						$string .= $suffix;
-					}
-
+					$slug  = $originalSlug;
+					$slug .= '-'.$s;
 					if ($ignoreID) {
-						$exists = DB::table($table)->where($fieldName, '=', $string)->where('id', '!=', $ignoreID)->count();
+						$exists = DB::table($table)->where($fieldName, '=', $slug)->where('id', '!=', $ignoreID)->count();
 					} else {
-						$exists = DB::table($table)->where($fieldName, '=', $string)->count();
+						$exists = DB::table($table)->where($fieldName, '=', $slug)->count();
 					}
 					if (!$exists) $uniqueFound = true;
 				}
@@ -431,7 +358,7 @@ class TetraText {
 			if (!$uniqueFound) return false;
 		}
 
-		return $string;
+		return $slug;
 	}
 
 	/**
@@ -579,9 +506,9 @@ class TetraText {
 		} else {
 			if (!is_int($dateEnd))	$dateEnd = strtotime($dateEnd);
 		}
-		$date = array('number'   => 0,
-					  'interval' => '',
-			   		  'past'     => false);
+		$date = array('number'=>	0,
+					  'interval'=>	'',
+			   		  'past'=>		false);
 
 		$seconds = $dateEnd - $dateStart;
 		if ($seconds < 0) {
@@ -590,15 +517,13 @@ class TetraText {
 			$date['past'] = true;
 		}
 
-		$intervals = array(
-			'year'   => 31536000,
-			'month'  => 2628000,
-			'week'   => 604800,
-			'day'    => 86400,
-			'hour'   => 3600,
-			'minute' => 60,
-			'second' => 1,
-		);
+		$intervals = array('year'=>		31536000,
+						   'month'=>	2628000,
+						   'week'=>		604800,
+						   'day'=>		86400,
+						   'hour'=>		3600,
+						   'minute'=>	60,
+						   'second'=>	1);
 
 		foreach ($intervals as $interval => $intervalSeconds) {
 			$number = floor($seconds / $intervalSeconds);
@@ -669,27 +594,11 @@ class TetraText {
 	 * @param  boolean $paragraphs
 	 * @return string
 	 */
-	public static function charLimit($string = '', $characters = 140, $end = true, $endLink = false, $paragraphs = false)
+	public static function charLimit($string = '', $characters = 140, $end = '...', $endLink = false, $paragraphs = false)
 	{
-		//if end is set to null or false, set it to an empty string
-		if (is_null($end) || (is_bool($end) && !$end))
-			$end = "";
-
-		//if end is set to true, use "..." as a default
-		if (is_bool($end) && $end)
-			$end = "...";
-
-		//convert HTML special characters if end string is not HTML
-		if ($end == strip_tags($end))
-			$end = static::entities($end);
-
-		//if end link is not a full URL, convert it into one
-		if ($endLink && substr($end, 0, 4) != "http")
-			$endLink = URL::to($endLink);
-
 		$formattedString = substr($string, 0, $characters);
 		if ($formattedString != $string) {
-			if ($endLink) $end = ' <a href="'.$endLink.'" class="read-more">'.$end.'</a>';
+			if ($endLink) $end = '<a href="'.$endLink.'" class="read-more">'.$end.'</a>';
 			$formattedString .= $end;
 		}
 		if ($paragraphs) $formattedString = static::paragraphs($formattedString);
@@ -697,7 +606,7 @@ class TetraText {
 	}
 
 	/**
-	 * Get a random MD5-hashed string at a specified length.
+	 * Get a random MD5 hash.
 	 *
 	 * @param  integer $length
 	 * @return string
@@ -714,7 +623,7 @@ class TetraText {
 	 *
 	 * @param  string  $html
 	 */
-	public static function purifyHTML($html) {
+	public static function purifyHtml($html) {
 		$purifier = new HTMLPurifier();
 		$html = trim($html);
 		$html = $purifier->purify($html);
