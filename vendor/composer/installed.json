@@ -7,12 +7,12 @@
         "source": {
             "type": "git",
             "url": "https://github.com/illuminate/support.git",
-            "reference": "dce6967ffd5249ff2ff53afb090192c4c76f2581"
+            "reference": "48db89ad7bd5f6b384377abc7ad1f96a387eabd9"
         },
         "dist": {
             "type": "zip",
-            "url": "https://api.github.com/repos/illuminate/support/zipball/dce6967ffd5249ff2ff53afb090192c4c76f2581",
-            "reference": "dce6967ffd5249ff2ff53afb090192c4c76f2581",
+            "url": "https://api.github.com/repos/illuminate/support/zipball/48db89ad7bd5f6b384377abc7ad1f96a387eabd9",
+            "reference": "48db89ad7bd5f6b384377abc7ad1f96a387eabd9",
             "shasum": ""
         },
         "require": {
@@ -23,11 +23,11 @@
             "patchwork/utf8": "1.1.*",
             "phpunit/phpunit": "3.7.*"
         },
-        "time": "2013-08-22 13:37:57",
+        "time": "2013-12-13 02:49:39",
         "type": "library",
         "extra": {
             "branch-alias": {
-                "dev-master": "4.1-dev"
+                "dev-master": "4.2-dev"
             }
         },
         "installation-source": "source",
@@ -59,18 +59,18 @@
         "source": {
             "type": "git",
             "url": "https://github.com/ezyang/htmlpurifier.git",
-            "reference": "fac747bdbdba6aeaba4bed91ef49b2378c1798e4"
+            "reference": "18b8a0e44aa873bc7b4208ce5c94a76f6e4566ba"
         },
         "dist": {
             "type": "zip",
-            "url": "https://api.github.com/repos/ezyang/htmlpurifier/zipball/fac747bdbdba6aeaba4bed91ef49b2378c1798e4",
-            "reference": "fac747bdbdba6aeaba4bed91ef49b2378c1798e4",
+            "url": "https://api.github.com/repos/ezyang/htmlpurifier/zipball/18b8a0e44aa873bc7b4208ce5c94a76f6e4566ba",
+            "reference": "18b8a0e44aa873bc7b4208ce5c94a76f6e4566ba",
             "shasum": ""
         },
         "require": {
             "php": ">=5.2"
         },
-        "time": "2013-08-18 02:27:26",
+        "time": "2013-12-08 23:51:56",
         "type": "library",
         "installation-source": "source",
         "autoload": {
@@ -89,7 +89,8 @@
             {
                 "name": "Edward Z. Yang",
                 "email": "admin@htmlpurifier.org",
-                "homepage": "http://ezyang.com"
+                "homepage": "http://ezyang.com",
+                "role": "Developer"
             }
         ],
         "description": "Standards compliant HTML filter written in PHP",
