@@ -6,7 +6,8 @@
 		money values and more. There are also some limited date functions available.
 
 		created by Cody Jassman
-		last updated on January 3, 2014
+		v0.4.0
+		last updated on July 26, 2014
 ----------------------------------------------------------------------------------------------------------*/
 
 use Illuminate\Support\Facades\DB;
@@ -27,7 +28,7 @@ class TetraText {
 	 * @param  boolean $allowNegative
 	 * @return string
 	 */
-	public static function numeric($value, $allowDecimal = true, $allowNegative = false)
+	public function numeric($value, $allowDecimal = true, $allowNegative = false)
 	{
 		$formatted = "";
 		for ($n=0; $n < strlen($value); $n++) {
@@ -54,9 +55,9 @@ class TetraText {
 	 * @param  string  $thousandsSeparator
 	 * @return string
 	 */
-	public static function money($value, $prefix = '$', $allowNegative = true, $thousandsSeparator = ',')
+	public function money($value, $prefix = '$', $allowNegative = true, $thousandsSeparator = ',')
 	{
-		$value = static::numeric($value, true, true);
+		$value = $this->numeric($value, true, true);
 		$formatted = "";
 		if ($value != "") {
 			if (substr($value, 0, 1) == '-') {
@@ -85,10 +86,10 @@ class TetraText {
 	 * @param  boolean $returnNumeric
 	 * @return mixed
 	 */
-	public static function percent($value = 0, $total = 0, $decimals = 1, $returnNumeric = false)
+	public function percent($value = 0, $total = 0, $decimals = 1, $returnNumeric = false)
 	{
-		$value = static::numeric($value, true);
-		$total = static::numeric($total, true);
+		$value = $this->numeric($value, true);
+		$total = $this->numeric($total, true);
 
 		$percent = 0;
 		if ($total > 0) {
@@ -105,7 +106,7 @@ class TetraText {
 	 * @param  string  $name
 	 * @return string
 	 */
-	public static function name($name = '')
+	public function name($name = '')
 	{
 		$name = trim($name);
 		if ($name == strtoupper($name)) $name = strtolower($name);
@@ -119,9 +120,9 @@ class TetraText {
 	 * @param  string  $title
 	 * @return string
 	 */
-	public static function title($title = '')
+	public function title($title = '')
 	{
-		$title = ucwords(static::name($title));
+		$title = ucwords($this->name($title));
 		$lowercaseWords = array(
 			'a',
 			'an',
@@ -147,7 +148,7 @@ class TetraText {
 	 * @param  boolean $areaCodeBrackets
 	 * @return string
 	 */
-	public static function phone($phoneNumber, $digits = 10, $separator = '-', $areaCodeBrackets = true)
+	public function phone($phoneNumber, $digits = 10, $separator = '-', $areaCodeBrackets = true)
 	{
 		if ($phoneNumber != "") {
 			if ($areaCodeBrackets) {
@@ -157,7 +158,7 @@ class TetraText {
 				$bracketL = ""; $bracketR = $separator;
 				if ($digits == 11) { $firstDigit = "1".$separator; } else { $firstDigit = ""; }
 			}
-			$phoneNumber = static::numeric($phoneNumber, false);
+			$phoneNumber = $this->numeric($phoneNumber, false);
 			$length = strlen($phoneNumber);
 			$offset = $length - $digits;
 			if ($offset < 0) $offset = 0;
@@ -179,7 +180,7 @@ class TetraText {
 	 * @param  boolean $separateWithSpace
 	 * @return string
 	 */
-	public static function postalCode($postalCode = '', $separateWithSpace = true)
+	public function postalCode($postalCode = '', $separateWithSpace = true)
 	{
 		if ($separateWithSpace) {
 			$separator = " ";
@@ -201,9 +202,9 @@ class TetraText {
 	 * @param  integer $number
 	 * @return string
 	 */
-	public static function numberSuffix($number = 1)
+	public function numberSuffix($number = 1)
 	{
-		$number = static::numeric($number, false);
+		$number = $this->numeric($number, false);
 
 		$numberFormatted = $number.'th';
 
@@ -226,7 +227,7 @@ class TetraText {
 	 * @param  string  $type
 	 * @return string
 	 */
-	public static function boolToStr($value, $type = 'Yes/No')
+	public function boolToStr($value, $type = 'Yes/No')
 	{
 		if (is_string($type)) $type = explode('/', $type);
 		if (!isset($type[1])) $type[1] = "";
@@ -243,7 +244,7 @@ class TetraText {
 	 * @param  string  $delimiter
 	 * @return string
 	 */
-	public static function listToStr($list, $delimiter = ', ')
+	public function listToStr($list, $delimiter = ', ')
 	{
 		$str = "";
 		foreach ($list as $key => $value) {
@@ -274,7 +275,7 @@ class TetraText {
 	 * @param  string  $delimiter
 	 * @return string
 	 */
-	public static function objListToStr($obj, $attribute = null, $delimiter = ', ')
+	public function objListToStr($obj, $attribute = null, $delimiter = ', ')
 	{
 		$str = "";
 		foreach ($obj as $objListed) {
@@ -306,7 +307,7 @@ class TetraText {
 	 * @param  string  $plural
 	 * @return string
 	 */
-	public static function pluralize($singular = 'result', $number = 1, $plural = false)
+	public function pluralize($singular = 'result', $number = 1, $plural = false)
 	{
 		if ($number == 1) {
 			return $singular;
@@ -326,9 +327,9 @@ class TetraText {
 	 * @param  string  $plural
 	 * @return string
 	 */
-	public static function pluralizeMessage($message, $singular = 'result', $number = 1, $plural = false)
+	public function pluralizeMessage($message, $singular = 'result', $number = 1, $plural = false)
 	{
-		$item = static::pluralize($singular, $number, $plural);
+		$item = $this->pluralize($singular, $number, $plural);
 		$message = str_replace(':number', $number, str_replace(':item', $item, $message));
 	}
 
@@ -338,7 +339,7 @@ class TetraText {
 	 * @param  string  $item
 	 * @return string
 	 */
-	public static function a($item)
+	public function a($item)
 	{
 		$itemFormatted = strtolower($item);
 		$prefix = 'a';
@@ -363,7 +364,7 @@ class TetraText {
 	 * @param  string  $value
 	 * @return string
 	 */
-	public static function entities($value)
+	public function entities($value)
 	{
 		return htmlentities($value, ENT_QUOTES, Config::get('tetra-text::encoding'), false);
 	}
@@ -375,7 +376,7 @@ class TetraText {
 	 * @param  mixed   $charLimit
 	 * @return string
 	 */
-	public static function slug($string, $charLimit = false)
+	public function slug($string, $charLimit = false)
 	{
 		$slug = Str::slug(strtr(
 			trim($string),
@@ -383,8 +384,10 @@ class TetraText {
 			'                               '
 		));
 
-		if ($charLimit)
+		if ($charLimit) {
+			var_dump($charLimit); exit;
 			$slug = substr($slug, 0, $charLimit);
+		}
 
 		if (substr($slug, -1) == "-")
 			$slug = substr($slug, 0, (strlen($slug) - 1));
@@ -402,10 +405,10 @@ class TetraText {
 	 * @param  mixed   $charLimit
 	 * @return mixed
 	 */
-	public static function uniqueSlug($string, $table, $fieldName = 'slug', $ignoreID = false, $charLimit = false)
+	public function uniqueSlug($string, $table, $fieldName = 'slug', $ignoreID = false, $charLimit = false)
 	{
-		$slug = static::slug($string, $charLimit);
-		return static::unique($slug, $table, $fieldName, $ignoreID, false, $charLimit);
+		$slug = $this->slug($string, $charLimit);
+		return $this->unique($slug, $table, $fieldName, $ignoreID, false, $charLimit);
 	}
 
 	/**
@@ -419,7 +422,7 @@ class TetraText {
 	 * @param  mixed   $charLimit
 	 * @return mixed
 	 */
-	public static function unique($string, $table, $fieldName = 'name', $ignoreID = false, $filename = false, $charLimit = false)
+	public function unique($string, $table, $fieldName = 'name', $ignoreID = false, $filename = false, $charLimit = false)
 	{
 		if ($ignoreID) {
 			$exists = DB::table($table)->where($fieldName, '=', $string)->where('id', '!=', $ignoreID)->count();
@@ -465,7 +468,7 @@ class TetraText {
 	 * @param  string  $firstDay
 	 * @return string
 	 */
-	public static function firstDayOfWeek($date = 'current', $firstDay = 'Sunday')
+	public function firstDayOfWeek($date = 'current', $firstDay = 'Sunday')
 	{
 		$firstDay = date('w', strtotime(ucfirst($firstDay)));
 		if ($date == "current") { $date = date('Y-m-d'); } else { $date = date('Y-m-d', strtotime($date)); }
@@ -482,7 +485,7 @@ class TetraText {
 	 * @param  string  $firstDay
 	 * @return string
 	 */
-	public static function lastDayOfWeek($date = 'current', $firstDay = 'Sunday')
+	public function lastDayOfWeek($date = 'current', $firstDay = 'Sunday')
 	{
 		$firstDay = date('w', strtotime(ucfirst($firstDay)));
 		$lastDay = $firstDay + 6;
@@ -500,7 +503,7 @@ class TetraText {
 	 * @param  string  $format
 	 * @return string
 	 */
-	public static function firstDayOfMonth($date = 'current', $format = false)
+	public function firstDayOfMonth($date = 'current', $format = false)
 	{
 		if ($date == "current") {
 			$result = date('Y-m-01');
@@ -508,7 +511,7 @@ class TetraText {
 			$result = date('Y-m-01', strtotime($date));
 		}
 
-		if ($format) $result = static::date($result, $format);
+		if ($format) $result = $this->date($result, $format);
 		return $result;
 	}
 
@@ -519,7 +522,7 @@ class TetraText {
 	 * @param  mixed   $format
 	 * @return string
 	 */
-	public static function lastDayOfMonth($date = 'current', $format = false)
+	public function lastDayOfMonth($date = 'current', $format = false)
 	{
 		if ($date == "current") {
 			$date = date('Y-m-d');
@@ -549,7 +552,7 @@ class TetraText {
 			}
 		}
 
-		if ($format) $result = static::date($result, $format);
+		if ($format) $result = $this->date($result, $format);
 		return $result;
 	}
 
@@ -562,7 +565,7 @@ class TetraText {
 	 * @param  boolean $includePartialInterval
 	 * @return string
 	 */
-	public static function timeBetweenDates($dateStart, $dateEnd, $interval = false, $includePartialInterval = false)
+	public function timeBetweenDates($dateStart, $dateEnd, $interval = false, $includePartialInterval = false)
 	{
 		$time = strtotime($dateEnd) - strtotime($dateStart);
 		if ($interval) {
@@ -582,7 +585,7 @@ class TetraText {
 	 * @param  string  $adjust
 	 * @return string
 	 */
-	public static function date($date, $format = 'F j, Y', $adjust = '')
+	public function date($date, $format = 'F j, Y', $adjust = '')
 	{
 		if (trim($date) != "" && strtolower(trim($date)) != "date" && $date != "0000-00-00") return date($format, strtotime($date.' '.$adjust));
 		return "";
@@ -595,7 +598,7 @@ class TetraText {
 	 * @param  mixed   $dateEnd
 	 * @return string
 	 */
-	public static function dateToInterval($dateStart, $dateEnd = false)
+	public function dateToInterval($dateStart, $dateEnd = false)
 	{
 		if (!is_int($dateStart))	$dateStart = strtotime($dateStart);
 		if (!$dateEnd) {
@@ -641,9 +644,9 @@ class TetraText {
 	 * @param  mixed   $dateEnd
 	 * @return string
 	 */
-	public static function dateToIntervalStr($dateStart, $dateEnd = false)
+	public function dateToIntervalStr($dateStart, $dateEnd = false)
 	{
-		$date = static::dateToInterval($dateStart, $dateEnd);
+		$date = $this->dateToInterval($dateStart, $dateEnd);
 		if (!$date['past']) {
 			if ($date['number'] == 1 && !in_array($date['interval'], array('minute', 'second'))) {
 				if ($date['interval'] == "day") {
@@ -655,7 +658,7 @@ class TetraText {
 				return 'for '.$date['number'].' more '.$date['interval'].'s';
 			}
 		} else {
-			return static::pluralize('[number] [word] ago', $date['number'], $date['interval']);
+			return $this->pluralize('[number] [word] ago', $date['number'], $date['interval']);
 		}
 	}
 
@@ -665,7 +668,7 @@ class TetraText {
 	 * @param  string  $string
 	 * @return string
 	 */
-	public static function nl2p($string)
+	public function nl2p($string)
 	{
 		return str_replace('<p></p>', '', str_replace("\r\n", '</p><p>', str_replace("\r\n\r\n", '</p><p>', trim($string))));
 	}
@@ -677,10 +680,10 @@ class TetraText {
 	 * @param  integer $characters
 	 * @return string
 	 */
-	public static function paragraphs($string, $charLimit = 0)
+	public function paragraphs($string, $charLimit = 0)
 	{
-		if ($charLimit) $string = static::charLimit($string, $charLimit);
-		return '<p>'.static::nl2p($string).'</p>';
+		if ($charLimit) $string = $this->charLimit($string, $charLimit);
+		return '<p>'.$this->nl2p($string).'</p>';
 	}
 
 	/**
@@ -693,7 +696,7 @@ class TetraText {
 	 * @param  boolean $paragraphs
 	 * @return string
 	 */
-	public static function charLimit($string = '', $characters = 140, $end = true, $endLink = false, $paragraphs = false)
+	public function charLimit($string = '', $characters = 140, $end = true, $endLink = false, $paragraphs = false)
 	{
 		//if end is set to null or false, set it to an empty string
 		if (is_null($end) || (is_bool($end) && !$end))
@@ -705,7 +708,7 @@ class TetraText {
 
 		//convert HTML special characters if end string is not HTML
 		if ($end == strip_tags($end))
-			$end = static::entities($end);
+			$end = $this->entities($end);
 
 		//if end link is not a full URL, convert it into one
 		if ($endLink && substr($end, 0, 4) != "http")
@@ -716,7 +719,7 @@ class TetraText {
 			if ($endLink) $end = ' <a href="'.$endLink.'" class="read-more">'.$end.'</a>';
 			$formattedString .= $end;
 		}
-		if ($paragraphs) $formattedString = static::paragraphs($formattedString);
+		if ($paragraphs) $formattedString = $this->paragraphs($formattedString);
 		return $formattedString;
 	}
 
@@ -726,7 +729,7 @@ class TetraText {
 	 * @param  integer $length
 	 * @return string
 	 */
-	public static function strRandom($length = 32)
+	public function strRandom($length = 32)
 	{
 		$md5 = md5(rand(100000, 99999999).rand(100000, 99999999));
 		if ($length > 32) $md5 .= md5(rand(100000, 99999999).rand(100000, 99999999)); //double length if length to return exceeds 32 characters
@@ -738,7 +741,7 @@ class TetraText {
 	 *
 	 * @param  string  $html
 	 */
-	public static function purifyHtml($html) {
+	public function purifyHtml($html) {
 		$purifier = new HTMLPurifier();
 		$html = trim($html);
 		$html = $purifier->purify($html);

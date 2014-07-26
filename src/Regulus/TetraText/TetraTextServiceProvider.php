@@ -28,7 +28,9 @@ class TetraTextServiceProvider extends ServiceProvider {
 	 */
 	public function register()
 	{
-		//
+		$this->app->bind('tetratext', function() {
+			return new TetraText;
+		});
 	}
 
 	/**
