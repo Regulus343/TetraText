@@ -592,7 +592,7 @@ class TetraText {
 				{
 					if (($year/400) == round($year/400))
 						$lastDay = 29;
-					} else
+					else
 						$lastDay = 28;
 				} else {
 					$lastDay = 29;
