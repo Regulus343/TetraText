@@ -6,8 +6,8 @@
 		money values and more. There are also some limited date functions available.
 
 		created by Cody Jassman
-		v0.4.0
-		last updated on July 26, 2014
+		v0.4.1
+		last updated on October 1, 2014
 ----------------------------------------------------------------------------------------------------------*/
 
 use Illuminate\Support\Facades\DB;
@@ -31,7 +31,9 @@ class TetraText {
 	public function numeric($value, $allowDecimal = true, $allowNegative = false)
 	{
 		$formatted = "";
-		for ($n=0; $n < strlen($value); $n++) {
+
+		for ($n = 0; $n < strlen($value); $n++)
+		{
 			if ($allowDecimal == false) {
 				if (is_numeric(substr($value, $n, 1)) || ($allowNegative && $n == 0 && substr($value, 0, 1) == '-')) {
 					$formatted .= substr($value, $n, 1);
@@ -42,6 +44,7 @@ class TetraText {
 				}
 			}
 		}
+
 		return $formatted;
 	}
 
@@ -57,23 +60,27 @@ class TetraText {
 	 */
 	public function money($value, $prefix = '$', $allowNegative = true, $thousandsSeparator = ',')
 	{
-		$value = $this->numeric($value, true, true);
+		$value     = $this->numeric($value, true, true);
 		$formatted = "";
-		if ($value != "") {
+
+		if ($value != "")
+		{
 			if (substr($value, 0, 1) == '-') {
 				if ($allowNegative) {
-					if ($allowNegative === "brackets") {
+					if ($allowNegative === "brackets")
 						$formatted = '('.$prefix.number_format(abs($value), 2, '.', $thousandsSeparator).')';
-					} else {
+					else
 						$formatted = '-'.$prefix.number_format(abs($value), 2, '.', $thousandsSeparator);
-					}
 				} else {
 					$formatted = $prefix.'0.00';
 				}
 			} else {
 				$formatted = $prefix.number_format($value, 2, '.', $thousandsSeparator);
 			}
-		} else { $formatted = $prefix.'0.00'; }
+		} else {
+			$formatted = $prefix.'0.00';
+		}
+
 		return $formatted;
 	}
 
@@ -92,11 +99,12 @@ class TetraText {
 		$total = $this->numeric($total, true);
 
 		$percent = 0;
-		if ($total > 0) {
+		if ($total > 0)
 			$percent = round($value / $total * 100, $decimals);
-		}
 
-		if (!$returnNumeric) $percent .= '%';
+		if (!$returnNumeric)
+			$percent .= '%';
+
 		return $percent;
 	}
 
@@ -109,8 +117,13 @@ class TetraText {
 	public function name($name = '')
 	{
 		$name = trim($name);
-		if ($name == strtoupper($name)) $name = strtolower($name);
+
+		//if name is in all caps, make it lowercase so only first letter is capitalized
+		if ($name == strtoupper($name))
+			$name = strtolower($name);
+
 		$name = ucfirst($name);
+
 		return $name;
 	}
 
@@ -123,13 +136,16 @@ class TetraText {
 	public function title($title = '')
 	{
 		$title = ucwords($this->name($title));
+
 		$lowercaseWords = array(
 			'a',
 			'an',
-			'the',
-			'of',
 			'at',
+			'by',
 			'in',
+			'of',
+			'on',
+			'the',
 		);
 
 		foreach ($lowercaseWords as $word) {
@@ -384,10 +400,8 @@ class TetraText {
 			'                               '
 		));
 
-		if ($charLimit) {
-			var_dump($charLimit); exit;
+		if ($charLimit)
 			$slug = substr($slug, 0, $charLimit);
-		}
 
 		if (substr($slug, -1) == "-")
 			$slug = substr($slug, 0, (strlen($slug) - 1));
@@ -401,14 +415,15 @@ class TetraText {
 	 * @param  string  $string
 	 * @param  string  $table
 	 * @param  string  $fieldName
-	 * @param  mixed   $ignoreID
+	 * @param  mixed   $ignoreId
 	 * @param  mixed   $charLimit
 	 * @return mixed
 	 */
-	public function uniqueSlug($string, $table, $fieldName = 'slug', $ignoreID = false, $charLimit = false)
+	public function uniqueSlug($string, $table, $fieldName = 'slug', $ignoreId = false, $charLimit = false)
 	{
 		$slug = $this->slug($string, $charLimit);
-		return $this->unique($slug, $table, $fieldName, $ignoreID, false, $charLimit);
+
+		return $this->unique($slug, $table, $fieldName, $ignoreId, false, $charLimit);
 	}
 
 	/**
@@ -417,45 +432,52 @@ class TetraText {
 	 * @param  string  $string
 	 * @param  string  $table
 	 * @param  string  $fieldName
-	 * @param  mixed   $ignoreID
+	 * @param  mixed   $ignoreId
 	 * @param  boolean $filename
 	 * @param  mixed   $charLimit
 	 * @return mixed
 	 */
-	public function unique($string, $table, $fieldName = 'name', $ignoreID = false, $filename = false, $charLimit = false)
+	public function unique($string, $table, $fieldName = 'name', $ignoreId = false, $filename = false, $charLimit = false)
 	{
-		if ($ignoreID) {
-			$exists = DB::table($table)->where($fieldName, '=', $string)->where('id', '!=', $ignoreID)->count();
-		} else {
+		if ($ignoreId)
+			$exists = DB::table($table)->where($fieldName, '=', $string)->where('id', '!=', $ignoreId)->count();
+		else
 			$exists = DB::table($table)->where($fieldName, '=', $string)->count();
-		}
 
 		$extension = $filename ? File::extension($string) : '';
 
-		if ((int) $exists) {
+		if ((int) $exists)
+		{
 			$uniqueFound = false;
-			if ($charLimit) $string = substr($string, 0, ($charLimit - 2));
+
+			if ($charLimit)
+				$string = substr($string, 0, ($charLimit - 2));
+
 			$originalString = $string;
+
 			for ($s = 2; $s <= 99; $s++) {
-				if (!$uniqueFound) {
+				if (!$uniqueFound)
+				{
 					$string = $originalString;
 					$suffix = '-'.$s;
 
-					if ($filename) {
+					if ($filename)
 						$string = str_replace('.'.$extension, '', $string).$suffix.'.'.$extension;
-					} else {
+					else
 						$string .= $suffix;
-					}
 
-					if ($ignoreID) {
-						$exists = DB::table($table)->where($fieldName, '=', $string)->where('id', '!=', $ignoreID)->count();
-					} else {
+					if ($ignoreId)
+						$exists = DB::table($table)->where($fieldName, '=', $string)->where('id', '!=', $ignoreId)->count();
+					else
 						$exists = DB::table($table)->where($fieldName, '=', $string)->count();
-					}
-					if (!$exists) $uniqueFound = true;
+
+					if (!$exists)
+						$uniqueFound = true;
 				}
 			}
-			if (!$uniqueFound) return false;
+
+			if (!$uniqueFound)
+				return false;
 		}
 
 		return $string;
@@ -471,10 +493,19 @@ class TetraText {
 	public function firstDayOfWeek($date = 'current', $firstDay = 'Sunday')
 	{
 		$firstDay = date('w', strtotime(ucfirst($firstDay)));
-		if ($date == "current") { $date = date('Y-m-d'); } else { $date = date('Y-m-d', strtotime($date)); }
+
+		if ($date == "current")
+			$date = date('Y-m-d');
+		else
+			$date = date('Y-m-d', strtotime($date));
+
 		$difference = date('w', strtotime($date)) - $firstDay;
-		if ($difference < 0) $difference += 7;
-		$newDate = date('Y-m-d', (strtotime($date)-($difference*86400))); //subtract days
+
+		if ($difference < 0)
+			$difference += 7;
+
+		$newDate = date('Y-m-d', (strtotime($date)-($difference * 86400))); //subtract days
+
 		return $newDate;
 	}
 
@@ -488,11 +519,21 @@ class TetraText {
 	public function lastDayOfWeek($date = 'current', $firstDay = 'Sunday')
 	{
 		$firstDay = date('w', strtotime(ucfirst($firstDay)));
+
 		$lastDay = $firstDay + 6;
-		if ($date == "current") { $date = date('Y-m-d'); } else { $date = date('Y-m-d', strtotime($date)); }
+
+		if ($date == "current")
+			$date = date('Y-m-d');
+		else
+			$date = date('Y-m-d', strtotime($date));
+
 		$difference = $lastDay - date('w', strtotime($date));
-		if ($difference >= 7) $difference -= 7;
-		$newDate = date('Y-m-d', (strtotime($date)+($difference*86400))); //subtract days
+
+		if ($difference >= 7)
+			$difference -= 7;
+
+		$newDate = date('Y-m-d', (strtotime($date)+($difference * 86400))); //subtract days
+
 		return $newDate;
 	}
 
@@ -505,13 +546,14 @@ class TetraText {
 	 */
 	public function firstDayOfMonth($date = 'current', $format = false)
 	{
-		if ($date == "current") {
+		if ($date == "current")
 			$result = date('Y-m-01');
-		} else {
+		else
 			$result = date('Y-m-01', strtotime($date));
-		}
 
-		if ($format) $result = $this->date($result, $format);
+		if ($format)
+			$result = $this->date($result, $format);
+
 		return $result;
 	}
 
@@ -530,29 +572,41 @@ class TetraText {
 			$date = date('Y-m-d', strtotime($date));
 			$originalMonth = substr($date, 5, 2);
 		}
-		$year = substr($date, 0, 4); $month = substr($date, 5, 2); $day = substr($date, 8, 2); $result = "";
-		if (isset($originalMonth) && $month != $originalMonth) $month = $originalMonth; //prevent invalid dates having wrong month assigned (June 31 = July, etc...)
-		if ($month == "01" || $month == "03" || $month == "05" || $month == "07" || $month == "08" || $month == "10" || $month == "12") {
-			$result = $year.'-'.$month.'-31';
-		} else if ($month == "04" || $month == "06" || $month == "09" || $month == "11") {
-			$result = $year.'-'.$month.'-30';
+
+		$year   = substr($date, 0, 4);
+		$month  = substr($date, 5, 2);
+		$day    = substr($date, 8, 2);
+		$result = "";
+
+		//prevent invalid dates having wrong month assigned (June 31 = July, etc...)
+		if (isset($originalMonth) && $month != $originalMonth)
+			$month = $originalMonth;
+
+		if (in_array($month, ['01', '03', '05', '07', '08', '10', '12'])) {
+			$lastDay = 31;
+		} else if (in_array($month, ['04', '06', '09', '11'])) {
+			$lastDay = 30;
 		} else if ($month == "02") {
 			if (($year/4) == round($year/4)) {
-				if (($year/100) == round($year/100)) {
-					if (($year/400) == round($year/400)) {
-						$result = $year.'-'.$month.'-29';
-					} else {
-						$result = $year.'-'.$month.'-28';
-					}
+				if (($year/100) == round($year/100))
+				{
+					if (($year/400) == round($year/400))
+						$lastDay = 29;
+					} else
+						$lastDay = 28;
 				} else {
-					$result = $year.'-'.$month.'-29';
+					$lastDay = 29;
 				}
 			} else {
-				$result = $year.'-'.$month.'-28';
+				$lastDay = 28;
 			}
 		}
 
-		if ($format) $result = $this->date($result, $format);
+		$result = $year.'-'.$month.'-'.$lastDay;
+
+		if ($format)
+			$result = $this->date($result, $format);
+
 		return $result;
 	}
 
@@ -568,12 +622,19 @@ class TetraText {
 	public function timeBetweenDates($dateStart, $dateEnd, $interval = false, $includePartialInterval = false)
 	{
 		$time = strtotime($dateEnd) - strtotime($dateStart);
+
 		if ($interval) {
-			if (strtolower(substr($interval, 0, 1)) == "m") {
+			if (strtolower(substr($interval, 0, 1)) == "m")
+			{
 				$time = $time / 2629743.83;
-				if ($includePartialInterval) { return ceil($time); } else { return floor($time); }
+
+				if ($includePartialInterval)
+					return ceil($time);
+				else
+					return floor($time);
 			}
 		}
+
 		return $time;
 	}
 
@@ -587,7 +648,9 @@ class TetraText {
 	 */
 	public function date($date, $format = 'F j, Y', $adjust = '')
 	{
-		if (trim($date) != "" && strtolower(trim($date)) != "date" && $date != "0000-00-00") return date($format, strtotime($date.' '.$adjust));
+		if (trim($date) != "" && strtolower(trim($date)) != "date" && $date != "0000-00-00")
+			return date($format, strtotime($date.' '.$adjust));
+
 		return "";
 	}
 
@@ -600,22 +663,27 @@ class TetraText {
 	 */
 	public function dateToInterval($dateStart, $dateEnd = false)
 	{
-		if (!is_int($dateStart))	$dateStart = strtotime($dateStart);
+		if (!is_int($dateStart))
+			$dateStart = strtotime($dateStart);
+
 		if (!$dateEnd) {
 			$dateEnd = time();
 		} else {
-			if (!is_int($dateEnd))	$dateEnd = strtotime($dateEnd);
+			if (!is_int($dateEnd))
+				$dateEnd = strtotime($dateEnd);
 		}
-		$date = array('number'   => 0,
-					  'interval' => '',
-			   		  'past'     => false);
+		$date = array(
+			'number'   => 0,
+			'interval' => '',
+			'past'     => false,
+		);
 
 		$seconds = $dateEnd - $dateStart;
-		if ($seconds < 0) {
+
+		if ($seconds < 0)
 			$seconds = abs($seconds);
-		} else {
+		else
 			$date['past'] = true;
-		}
 
 		$intervals = array(
 			'year'   => 31536000,
@@ -629,11 +697,13 @@ class TetraText {
 
 		foreach ($intervals as $interval => $intervalSeconds) {
 			$number = floor($seconds / $intervalSeconds);
+
 			if ($number > 0 && $date['interval'] == "") {
-				$date['number'] = $number;
+				$date['number']   = $number;
 				$date['interval'] = $interval;
 			}
 		}
+
 		return $date;
 	}
 
@@ -647,7 +717,9 @@ class TetraText {
 	public function dateToIntervalStr($dateStart, $dateEnd = false)
 	{
 		$date = $this->dateToInterval($dateStart, $dateEnd);
-		if (!$date['past']) {
+
+		if (!$date['past'])
+		{
 			if ($date['number'] == 1 && !in_array($date['interval'], array('minute', 'second'))) {
 				if ($date['interval'] == "day") {
 					return 'until tomorrow';
@@ -682,7 +754,9 @@ class TetraText {
 	 */
 	public function paragraphs($string, $charLimit = 0)
 	{
-		if ($charLimit) $string = $this->charLimit($string, $charLimit);
+		if ($charLimit)
+			$string = $this->charLimit($string, $charLimit);
+
 		return '<p>'.$this->nl2p($string).'</p>';
 	}
 
@@ -716,10 +790,15 @@ class TetraText {
 
 		$formattedString = substr($string, 0, $characters);
 		if ($formattedString != $string) {
-			if ($endLink) $end = ' <a href="'.$endLink.'" class="read-more">'.$end.'</a>';
+			if ($endLink)
+				$end = ' <a href="'.$endLink.'" class="read-more">'.$end.'</a>';
+
 			$formattedString .= $end;
 		}
-		if ($paragraphs) $formattedString = $this->paragraphs($formattedString);
+
+		if ($paragraphs)
+			$formattedString = $this->paragraphs($formattedString);
+
 		return $formattedString;
 	}
 
@@ -732,7 +811,10 @@ class TetraText {
 	public function strRandom($length = 32)
 	{
 		$md5 = md5(rand(100000, 99999999).rand(100000, 99999999));
-		if ($length > 32) $md5 .= md5(rand(100000, 99999999).rand(100000, 99999999)); //double length if length to return exceeds 32 characters
+
+		if ($length > 32)
+			$md5 .= md5(rand(100000, 99999999).rand(100000, 99999999)); //double length if length to return exceeds 32 characters
+
 		return substr($md5, 0, $length);
 	}
 
@@ -741,12 +823,16 @@ class TetraText {
 	 *
 	 * @param  string  $html
 	 */
-	public function purifyHtml($html) {
+	public function purifyHtml($html)
+	{
 		$purifier = new HTMLPurifier();
+
 		$html = trim($html);
 		$html = $purifier->purify($html);
 
-		if (substr($html, -4) == "<br>") $html = substr($html, 0, (strlen($html) - 4));
+		if (substr($html, -4) == "<br>")
+			$html = substr($html, 0, (strlen($html) - 4));
+
 		$html = str_replace('<br>', '<br />', $html);
 
 		return $html;
