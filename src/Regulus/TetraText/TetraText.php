@@ -6,8 +6,8 @@
 		money values and more. There are also some limited date functions available.
 
 		created by Cody Jassman
-		v0.4.2
-		last updated on November 26, 2014
+		v0.4.3
+		last updated on December 5, 2014
 ----------------------------------------------------------------------------------------------------------*/
 
 use Illuminate\Support\Facades\DB;
@@ -34,14 +34,13 @@ class TetraText {
 
 		for ($n = 0; $n < strlen($value); $n++)
 		{
-			if ($allowDecimal == false) {
-				if (is_numeric(substr($value, $n, 1)) || ($allowNegative && $n == 0 && substr($value, 0, 1) == '-')) {
+			if ($allowDecimal == false)
+			{
+				if (is_numeric(substr($value, $n, 1)) || ($allowNegative && $n == 0 && substr($value, 0, 1) == '-'))
 					$formatted .= substr($value, $n, 1);
-				}
-			} else {
+			} else
 				if (is_numeric(substr($value, $n, 1)) || substr($value, $n, 1) == '.' || ($allowNegative && $n == 0 && substr($value, 0, 1) == '-')) {
 					$formatted .= substr($value, $n, 1);
-				}
 			}
 		}
 
@@ -216,24 +215,28 @@ class TetraText {
 	 * Add a letter suffix to an integer ("1st", "2nd", "3rd", "4th").
 	 *
 	 * @param  integer $number
+	 * @param  boolean $superscriptTag
 	 * @return string
 	 */
-	public function numberSuffix($number = 1)
+	public function numberSuffix($number = 1, $superscriptTag = true)
 	{
 		$number = $this->numeric($number, false);
 
-		$numberFormatted = $number.'th';
+		$suffix = "th";
 
 		if ((int) substr($number, -1) == 1 && $number != 11)
-			$numberFormatted = $number.'st';
+			$suffix = "st";
 
 		if ((int) substr($number, -1) == 2 && $number != 12)
-			$numberFormatted = $number.'nd';
+			$suffix = "nd";
 
 		if ((int) substr($number, -1) == 3 && $number != 13)
-			$numberFormatted = $number.'rd';
+			$suffix = "rd";
 
-		return $numberFormatted;
+		if ($superscriptTag)
+			$suffix = '<sup>'.$suffix.'</sup>';
+
+		return $number.$suffix;
 	}
 
 	/**
@@ -245,8 +248,12 @@ class TetraText {
 	 */
 	public function boolToStr($value, $type = 'Yes/No')
 	{
-		if (is_string($type)) $type = explode('/', $type);
-		if (!isset($type[1])) $type[1] = "";
+		if (is_string($type))
+			$type = explode('/', $type);
+
+		if (!isset($type[1]))
+			$type[1] = "";
+
 		if ($value)
 			return $type[0];
 		else
@@ -254,65 +261,103 @@ class TetraText {
 	}
 
 	/**
-	 * Turn a list of items into a string.
+	 * Get only items (keys) from an array if their values are set to true. If a simple array is used, the function will simply remove duplicate values.
+	 *
+	 * @param  array   $array
+	 * @return array
+	 */
+	public function getSelectedFromArray($array)
+	{
+		$newArray = [];
+		foreach ($array as $key => $value)
+		{
+			if (!is_numeric($key) && (is_bool($value) || is_numeric($value)))
+			{
+				if ($value && !in_array($key, $newArray))
+					$newArray[] = $key;
+
+			} else {
+				if ($value && !in_array($value, $newArray))
+					$newArray[] = $value;
+			}
+		}
+
+		return $newArray;
+	}
+
+	/**
+	 * Turn an array of items into a string.
 	 *
 	 * @param  array   $list
 	 * @param  string  $delimiter
 	 * @return string
 	 */
-	public function listToStr($list, $delimiter = ', ')
+	public function arrayToStringList($array, $delimiter = ', ')
 	{
-		$str = "";
-		foreach ($list as $key => $value) {
-			if (!is_numeric($key) && (is_bool($value) || is_numeric($value))) {
-				if ($value) {
-					if ($str == "") {
-						$str = $key;
-					} else {
-						$str .= $delimiter.$key;
-					}
-				}
-			} else {
-				if ($str == "") {
-					$str = $value;
-				} else {
-					$str .= $delimiter.$value;
-				}
-			}
-		}
-		return $str;
+		$array = $this->getSelectedFromArray($array);
+
+		return implode(', ', $array);
 	}
 
 	/**
-	 * Turn a collection of objects into a string list of items based on a given attribute or method.
+	 * Turn an array of items into an HTML list.
 	 *
-	 * @param  object  $obj
-	 * @param  string  $item
-	 * @param  string  $delimiter
+	 * @param  array   $list
+	 * @param  boolean $ordered
 	 * @return string
 	 */
-	public function objListToStr($obj, $attribute = null, $delimiter = ', ')
+	public function arrayToHtmlList($array, $ordered = false)
 	{
-		$str = "";
-		foreach ($obj as $objListed) {
+		$array = $this->getSelectedFromArray($array);
+
+		if (empty($array))
+			return "";
+
+		$html  = $ordered ? '<ol>' : '<ul>';
+		$html .= "\n";
+
+		foreach ($array as $item)
+		{
+			$html .= '<li>'.$item.'</li>' . "\n";
+		}
+
+		$html .= $ordered ? '</ol>' : '</ul>';
+		$html .= "\n";
+
+		return $html;
+	}
+
+	/**
+	 * Get the values of a specific attribute or method from an array of objects and place them in an array.
+	 *
+	 * @param  array   $objects
+	 * @param  mixed   $attribute
+	 * @return array
+	 */
+	public function objectItemsToArray($objects, $attribute = null)
+	{
+		$array = [];
+
+		foreach ($objects as $object)
+		{
 			if (is_null($attribute)) {
-				$item = $objListed;
+				$item = $object;
 			} else {
 				preg_match('/\(\)/', $attribute, $functionMatch);
+
 				if (!empty($functionMatch)) { //attribute is a method of object; call it
 					$function = str_replace('()', '', $attribute);
-					$item = $objListed->$function();
+					$item     = $object->$function();
 				} else {
-					$item = $objListed->{$attribute};
+					$item = $object->{$attribute};
 				}
 			}
-			if ($str == "") {
-				$str = $item;
-			} else {
-				$str .= ', '.$item;
-			}
+
+			if (!in_array($item, $array))
+				$array[] = $item;
 		}
-		return $str;
+
+		return $array;
 	}
 
 	/**
@@ -325,10 +370,12 @@ class TetraText {
 	 */
 	public function pluralize($singular = 'result', $number = 1, $plural = false)
 	{
-		if ($number == 1) {
+		if ($number == 1)
+		{
 			return $singular;
 		} else {
-			if (!$plural) $plural = Str::plural($singular);
+			if (!$plural)
+				$plural = Str::plural($singular);
 
 			return $plural;
 		}
@@ -345,7 +392,7 @@ class TetraText {
 	 */
 	public function pluralizeMessage($message, $singular = 'result', $number = 1, $plural = false)
 	{
-		$item = $this->pluralize($singular, $number, $plural);
+		$item    = $this->pluralize($singular, $number, $plural);
 		$message = str_replace(':number', $number, str_replace(':item', $item, $message));
 	}
 
@@ -358,7 +405,7 @@ class TetraText {
 	public function a($item)
 	{
 		$itemFormatted = strtolower($item);
-		$prefix = 'a';
+		$prefix        = 'a';
 
 		//use "an" if item begins with a vowel
 		if (in_array(substr($itemFormatted, 0, 1), array('a', 'e', 'i', 'o', 'u')))
@@ -639,19 +686,35 @@ class TetraText {
 	}
 
 	/**
-	 * An easy way for basic use of PHP's date() method.
+	 * Format a date.
 	 *
-	 * @param  string  $date
+	 * @param  mixed   $date
 	 * @param  string  $format
 	 * @param  string  $adjust
 	 * @return string
 	 */
-	public function date($date, $format = 'F j, Y', $adjust = '')
+	public function date($date = false, $format = 'F j, Y', $adjust = '')
 	{
-		if (trim($date) != "" && strtolower(trim($date)) != "date" && $date != "0000-00-00")
-			return date($format, strtotime($date.' '.$adjust));
+		if ($date === false)
+			$date = date('Y-m-d H:i:s');
 
-		return "";
+		if (is_null($date) || trim($date) == "" || $date == "0000-00-00" || $date == "0000-00-00 00:00:00")
+			return "";
+
+		return date($format, strtotime($date.' '.$adjust));
+	}
+
+	/**
+	 * Format a date-time.
+	 *
+	 * @param  mixed   $date
+	 * @param  string  $format
+	 * @param  string  $adjust
+	 * @return string
+	 */
+	public function dateTime($date = false, $format = 'F j, Y \a\t g:ia', $adjust = '')
+	{
+		return $this->date($date, $format, $adjust);
 	}
 
 	/**
@@ -803,19 +866,22 @@ class TetraText {
 	}
 
 	/**
-	 * Get a random MD5-hashed string at a specified length.
+	 * Get a random string at a specified length.
 	 *
 	 * @param  integer $length
 	 * @return string
 	 */
-	public function strRandom($length = 32)
+	public function getRandomString($length = 32)
 	{
-		$md5 = md5(rand(100000, 99999999).rand(100000, 99999999));
+		$characters       = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+		$charactersLength = strlen($characters);
+		$string           = "";
 
-		if ($length > 32)
-			$md5 .= md5(rand(100000, 99999999).rand(100000, 99999999)); //double length if length to return exceeds 32 characters
+		for ($i = 0; $i < $length; $i++) {
+			$string .= $characters[rand(0, $charactersLength - 1)];
+		}
 
-		return substr($md5, 0, $length);
+		return $string;
 	}
 
 	/**
