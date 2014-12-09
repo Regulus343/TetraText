@@ -6,8 +6,8 @@
 		money values and more. There are also some limited date functions available.
 
 		created by Cody Jassman
-		v0.4.3
-		last updated on December 5, 2014
+		v0.4.4
+		last updated on December 8, 2014
 ----------------------------------------------------------------------------------------------------------*/
 
 use Illuminate\Support\Facades\DB;
@@ -288,7 +288,7 @@ class TetraText {
 	/**
 	 * Turn an array of items into a string.
 	 *
-	 * @param  array   $list
+	 * @param  array   $array
 	 * @param  string  $delimiter
 	 * @return string
 	 */
@@ -302,7 +302,7 @@ class TetraText {
 	/**
 	 * Turn an array of items into an HTML list.
 	 *
-	 * @param  array   $list
+	 * @param  array   $array
 	 * @param  boolean $ordered
 	 * @return string
 	 */
@@ -343,11 +343,11 @@ class TetraText {
 			if (is_null($attribute)) {
 				$item = $object;
 			} else {
-				preg_match('/\(\)/', $attribute, $functionMatch);
+				$method = $this->getMethodFromString($attribute);
 
-				if (!empty($functionMatch)) { //attribute is a method of object; call it
-					$function = str_replace('()', '', $attribute);
-					$item     = $object->$function();
+				if (!is_null($method)) //attribute is a method of object; call it
+				{
+					$item = call_user_func_array([$object, $method['name']], $method['parameters']);
 				} else {
 					$item = $object->{$attribute};
 				}
@@ -358,6 +358,81 @@ class TetraText {
 		}
 
 		return $array;
+	}
+
+	/**
+	 * Get a method's name and parameters from a string.
+	 *
+	 * @param  string  $method
+	 * @return mixed
+	 */
+	public function getMethodFromString($method)
+	{
+		preg_match('/\(([A-Za-z0-9\ \'\"\,]*)\)/', $method, $methodMatch);
+
+		if (empty($methodMatch))
+			return null;
+
+		$parameters = $methodMatch[1];
+		if ($parameters != "")
+		{
+			$parameters = explode(',', $parameters);
+			for ($p = 0; $p < count($parameters); $p++)
+			{
+				$parameters[$p] = trim($parameters[$p]);
+
+				if ((substr($parameters[$p], 0, 1) == "'" && substr($parameters[$p], -1) == "'") || (substr($parameters[$p], 0, 1) == '"' && substr($parameters[$p], -1) == '"'))
+				{
+					$parameters[$p] = (string) substr($parameters[$p], 1, (strlen($parameters[$p]) - 2));
+				} else {
+					if (strtolower($parameters[$p]) == "true")
+						$parameters[$p] = true;
+					else if (strtolower($parameters[$p]) == "false")
+						$parameters[$p] = false;
+					else if (strtolower($parameters[$p]) == "null")
+						$parameters[$p] = null;
+					else
+						$parameters[$p] = (int) $parameters[$p];
+				}
+			}
+		} else {
+			$parameters = [];
+		}
+
+		return [
+			'name'       => str_replace($methodMatch[0], '', $method),
+			'parameters' => $parameters,
+		];
+	}
+
+	/**
+	 * Get a method's name from a string.
+	 *
+	 * @param  string  $method
+	 * @return mixed
+	 */
+	public function getMethodNameFromString($method)
+	{
+		$method = $this->getMethodFromString($method);
+		if (is_null($method))
+			return $method;
+
+		return $method['name'];
+	}
+
+	/**
+	 * Get a method's parameters from a string.
+	 *
+	 * @param  string  $method
+	 * @return mixed
+	 */
+	public function getMethodParametersFromString($method)
+	{
+		$method = $this->getMethodFromString($method);
+		if (is_null($method))
+			return [];
+
+		return $method['parameters'];
 	}
 
 	/**
