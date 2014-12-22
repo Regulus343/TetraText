@@ -6,8 +6,8 @@
 		money values and more. There are also some limited date functions available.
 
 		created by Cody Jassman
-		v0.4.4
-		last updated on December 8, 2014
+		v0.4.5
+		last updated on December 19, 2014
 ----------------------------------------------------------------------------------------------------------*/
 
 use Illuminate\Support\Facades\DB;
@@ -204,11 +204,36 @@ class TetraText {
 			$separator = "";
 			$length    = 6;
 		}
+
 		$postalCode = strtoupper(str_replace(' ', '', $postalCode));
 		$postalCode = substr($postalCode, 0, 3).$separator.substr($postalCode, 3, 3);
 		$postalCode = substr($postalCode, 0, 7);
-		if (strlen($postalCode) != $length) $postalCode = "";
+
+		if (strlen($postalCode) != $length)
+			$postalCode = "";
+
 		return $postalCode;
+	}
+
+	/**
+	 * Format an email address as a mailto: link.
+	 *
+	 * @param  mixed   $email
+	 * @param  mixed   $subject
+	 * @return mixed
+	 */
+	public function email($email = null, $subject = null)
+	{
+		if (is_null($email) || $email == "" || !strpos($email, '@') || !strpos($email, '.'))
+			return null;
+
+		$email = trim($email);
+		$href  = 'mailto:'.$email;
+
+		if (!is_null($subject) && trim($subject) != "")
+			$href .= '?subject='.str_replace(' ', '%20', trim($subject));
+
+		return '<a href="'.$href.'" class="email">'.$email.'</a>';
 	}
 
 	/**
