@@ -18,7 +18,9 @@ class TetraTextServiceProvider extends ServiceProvider {
 	 */
 	public function boot()
 	{
-		$this->package('regulus/tetra-text');
+		$this->publishes([
+			__DIR__.'/config/format.php' => config_path('format.php'),
+		]);
 	}
 
 	/**
@@ -28,7 +30,8 @@ class TetraTextServiceProvider extends ServiceProvider {
 	 */
 	public function register()
 	{
-		$this->app->bind('tetratext', function() {
+		$this->app->singleton('Regulus\TetraText\TetraText', function()
+		{
 			return new TetraText;
 		});
 	}

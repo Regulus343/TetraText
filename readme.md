@@ -1,7 +1,9 @@
 TetraText
 =========
 
-A small text/string formatting composer package that formats phone numbers, numeric values, money values and more. There are also some limited date functions available.
+**A small text/string formatting composer package for Laravel 5 that formats numeric values, money values, phone numbers, and more. There are also some limited date functions available.**
+
+> **Note:** For Laravel 4, you may use <a href="https://github.com/Regulus343/TetraText/tree/v0.4.4">version 0.4.4</a>.
 
 - [Installation](#installation)
 - [Available Functions](#available-functions)
@@ -12,10 +14,10 @@ A small text/string formatting composer package that formats phone numbers, nume
 To install TetraText, make sure "regulus/tetra-text" has been added to Laravel 4's `composer.json` file.
 
 	"require": {
-		"regulus/tetra-text": "0.4.5"
+		"regulus/tetra-text": "dev-master"
 	},
 
-Then run `php composer.phar update` from the command line. Composer will install the TetraText package. Now, all you have to do is register the service provider and set up TetraText's alias in `app/config/app.php`. Add this to the `providers` array:
+Then run `php composer.phar update` from the command line. Composer will install the TetraText package. Now, all you have to do is register the service provider and set up TetraText's alias in `config/app.php`. Add this to the `providers` array:
 
 	'Regulus\TetraText\TetraTextServiceProvider',
 
@@ -30,81 +32,93 @@ You may use 'TetraText', or another alias, but 'Format' is recommended for the s
 
 **Format a string as a number:**
 
+	//note: numeric() is an alias for Format::numeric()
+
 	//format a string as numeric
-	echo Format::numeric($value);
+	echo numeric($value);
 
 	//disallow decimals
-	echo Format::numeric($value, false);
+	echo numeric($value, false);
 
 	//allow negative numbers
-	echo Format::numeric($value, true, true);
+	echo numeric($value, true, true);
 
 **Format a string into a dollar value:**
 
+	//note: money() is an alias for Format::money()
+
 	//format a string as money
-	echo Format::money(100);
+	echo money(100);
 
 	//use euro symbol instead of dollar symbol
-	echo Format::money(100, '€');
+	echo money(100, '€');
 
 	//disallow negative numbers
-	echo Format::money(100, '$', false);
+	echo money(100, '$', false);
 
 	//remove thousands separator
-	echo Format::money(100, '$', true, '');
+	echo money(100, '$', true, '');
 
 The advantage of the `money()` function over PHP's `number_format()` is that negative dollar values will come out as `-$343.00` instead of `$-343.00` like they would if you simply concatenated a dollar sign to a string formatted with `number_format()`.
 
 **Turn a value into a percent of a specified total:**
 
+	//note: percent() is an alias for Format::percent()
+
 	//will output "25%"
-	echo Format::percent(25, 100);
+	echo percent(25, 100);
 
 	//use zero decimal places (default is 1)
-	echo Format::percent(25, 100, 0);
+	echo percent(25, 100, 0);
 
 	//will return as a number rather than a string with the "%" symbol concatenated to the end
-	echo Format::percent(25, 100, 0, true);
+	echo percent(25, 100, 0, true);
 
 The advantage of using the `percent()` function is that it will automatically avoid the "division by zero" error and return `0%`.
 
 **Format a North American phone number:**
 
+	//note: phone() is an alias for Format::phone()
+
 	//will output "(403) 343-5555"
-	echo Format::phone(14033435555);
+	echo phone(14033435555);
 
 	//will output "1 (403) 343-5555"
-	echo Format::phone(14033435555, 11);
+	echo phone(14033435555, 11);
 
 	//will output "(403) 343.5555"
-	echo Format::phone('1-403-343-5555', 10, '.');
+	echo phone('1-403-343-5555', 10, '.');
 
 	//will output "403.343.5555"
-	echo Format::phone('1-403-343-5555', 10, '.', false);
+	echo phone('1-403-343-5555', 10, '.', false);
 
 You may pass the `phone()` function a string or an integer. It will automatically strip out non-numeric characters before formatting into a phone number.
 
 **Format a Canadian postal code:**
 
+	//note: postal_code() is an alias for Format::postalCode()
+
 	//will output "S0N 0H0"
-	echo Format::postalCode('s0n0h0');
+	echo postal_code('s0n0h0');
 
 	//will output "S0N0H0"
-	echo Format::postalCode('s0n0h0', false);
+	echo postal_code('s0n0h0', false);
 
 **Format a boolean as a string:**
 
+	//note: bool_to_str() is an alias for Format::boolToStr()
+
 	//will output "Yes"
-	echo Format::boolToStr(true);
+	echo bool_to_str(true);
 
 	//will output "No"
-	echo Format::boolToStr(false);
+	echo bool_to_str(false);
 
 	//will output "Off"
-	echo Format::boolToStr(false, 'On/Off');
+	echo bool_to_str(false, 'On/Off');
 
 	//will output "Up"
-	echo Format::boolToStr(true, array('Up', 'Down'));
+	echo bool_to_str(true, array('Up', 'Down'));
 
 **Format an array of items as a string:**
 

@@ -6,8 +6,8 @@
 		money values and more. There are also some limited date functions available.
 
 		created by Cody Jassman
-		v0.4.5
-		last updated on December 19, 2014
+		v0.5.0
+		last updated on March 3, 2014
 ----------------------------------------------------------------------------------------------------------*/
 
 use Illuminate\Support\Facades\DB;
@@ -147,10 +147,12 @@ class TetraText {
 			'the',
 		);
 
-		foreach ($lowercaseWords as $word) {
+		foreach ($lowercaseWords as $word)
+		{
 			$title = str_replace(' '.ucfirst($word).' ', ' '.$word.' ', $title); //make word lowercase
 			$title = str_replace(': '.$word.' ', ': '.ucfirst($word).' ', $title); //change word back if it is preceded by colon
 		}
+
 		return $title;
 	}
 
@@ -163,28 +165,53 @@ class TetraText {
 	 * @param  boolean $areaCodeBrackets
 	 * @return string
 	 */
-	public function phone($phoneNumber, $digits = 10, $separator = '-', $areaCodeBrackets = true)
+	public function phone($phoneNumber, $digits = null, $separator = null, $areaCodeBrackets = null)
 	{
-		if ($phoneNumber != "") {
-			if ($areaCodeBrackets) {
-				$bracketL = "("; $bracketR = ") ";
-				if ($digits == 11) { $firstDigit = "1 "; } else { $firstDigit = ""; }
-			} else {
-				$bracketL = ""; $bracketR = $separator;
-				if ($digits == 11) { $firstDigit = "1".$separator; } else { $firstDigit = ""; }
-			}
-			$phoneNumber = $this->numeric($phoneNumber, false);
-			$length = strlen($phoneNumber);
-			$offset = $length - $digits;
-			if ($offset < 0) $offset = 0;
-			if ($digits == 11) {
-				$offset ++;
-				if ($length == 10) $phoneNumber = '1'.$phoneNumber; //if length is too short, add 1 to make 11 digit phone number
-			} else if ($digits == 10 && $length == 11) {
-				$offset ++;
-			}
-			$phoneNumber = $firstDigit.$bracketL.substr($phoneNumber, $offset, 3).$bracketR.substr($phoneNumber, ($offset+3), 3).$separator.substr($phoneNumber, ($offset+6), 4);
+		if (is_null($phoneNumber) || $phoneNumber == "")
+			return null;
+
+		$phoneNumber = $this->numeric($phoneNumber, false);
+
+		if (is_null($digits))
+			$digits = config('format.defaults.phone.digits');
+
+		if (is_null($separator))
+			$separator = config('format.defaults.phone.separator');
+
+		if (is_null($areaCodeBrackets))
+			$areaCodeBrackets = config('format.defaults.phone.area_code_brackets');
+
+		if ($areaCodeBrackets)
+		{
+			$bracketL   = "(";
+			$bracketR   = ") ";
+			$firstDigit = $digits == 11 ? '1 ' : '';
+		} else {
+			$bracketL   = "";
+			$bracketR   = $separator;
+			$firstDigit = $digits == 11 ? '1'.$separator : '';
 		}
+
+		$length = strlen($phoneNumber);
+		$offset = $length - $digits;
+
+		if ($length < 7)
+			return null;
+
+		if ($offset < 0)
+			$offset = 0;
+
+		if ($digits == 11)
+		{
+			$offset ++;
+
+			//if length is too short, add 1 to make 11 digit phone number
+			if ($length == 10)
+				$phoneNumber = '1'.$phoneNumber;
+		}
+
+		$phoneNumber = $firstDigit.$bracketL.substr($phoneNumber, $offset, 3).$bracketR.substr($phoneNumber, ($offset + 3), 3).$separator.substr($phoneNumber, ($offset + 6), 4);
+
 		return $phoneNumber;
 	}
 
@@ -195,7 +222,7 @@ class TetraText {
 	 * @param  boolean $separateWithSpace
 	 * @return string
 	 */
-	public function postalCode($postalCode = '', $separateWithSpace = true)
+	public function postalCode($postalCode, $separateWithSpace = true)
 	{
 		if ($separateWithSpace) {
 			$separator = " ";
@@ -207,10 +234,9 @@ class TetraText {
 
 		$postalCode = strtoupper(str_replace(' ', '', $postalCode));
 		$postalCode = substr($postalCode, 0, 3).$separator.substr($postalCode, 3, 3);
-		$postalCode = substr($postalCode, 0, 7);
 
 		if (strlen($postalCode) != $length)
-			$postalCode = "";
+			return null;
 
 		return $postalCode;
 	}
@@ -268,21 +294,24 @@ class TetraText {
 	 * Turn a boolean value into a string. Some examples of types are "Yes/No", "Yes", "On/Off", and "Active/Inactive".
 	 *
 	 * @param  boolean $value
-	 * @param  string  $type
+	 * @param  mixed   $options
 	 * @return string
 	 */
-	public function boolToStr($value, $type = 'Yes/No')
+	public function boolToStr($value, $options = null)
 	{
-		if (is_string($type))
-			$type = explode('/', $type);
+		if (is_null($options))
+			$options = config('format.defaults.bool_to_str_options');
 
-		if (!isset($type[1]))
-			$type[1] = "";
+		if (is_string($options))
+			$options = explode('/', $options);
+
+		if (!isset($options[1]))
+			$options[1] = "";
 
 		if ($value)
-			return $type[0];
+			return $options[0];
 		else
-			return $type[1];
+			return $options[1];
 	}
 
 	/**
@@ -633,18 +662,15 @@ class TetraText {
 	/**
 	 * Get the first day of the week starting with any day you want. Sunday is defaulted as the first day of the week.
 	 *
-	 * @param  string  $date
+	 * @param  mixed   $date
 	 * @param  string  $firstDay
 	 * @return string
 	 */
-	public function firstDayOfWeek($date = 'current', $firstDay = 'Sunday')
+	public function firstDayOfWeek($date = null, $firstDay = 'Sunday')
 	{
 		$firstDay = date('w', strtotime(ucfirst($firstDay)));
 
-		if ($date == "current")
-			$date = date('Y-m-d');
-		else
-			$date = date('Y-m-d', strtotime($date));
+		$date = is_null($date) ? date('Y-m-d') : date('Y-m-d', strtotime($date));
 
 		$difference = date('w', strtotime($date)) - $firstDay;
 
@@ -659,20 +685,17 @@ class TetraText {
 	/**
 	 * Get the last day of the week starting with any day you want. Sunday is defaulted as the first day of the week.
 	 *
-	 * @param  string  $date
+	 * @param  mixed   $date
 	 * @param  string  $firstDay
 	 * @return string
 	 */
-	public function lastDayOfWeek($date = 'current', $firstDay = 'Sunday')
+	public function lastDayOfWeek($date = null, $firstDay = 'Sunday')
 	{
 		$firstDay = date('w', strtotime(ucfirst($firstDay)));
 
 		$lastDay = $firstDay + 6;
 
-		if ($date == "current")
-			$date = date('Y-m-d');
-		else
-			$date = date('Y-m-d', strtotime($date));
+		$date = is_null($date) ? date('Y-m-d') : date('Y-m-d', strtotime($date));
 
 		$difference = $lastDay - date('w', strtotime($date));
 
@@ -687,16 +710,13 @@ class TetraText {
 	/**
 	 * Get the first day of the month. This function is just here for the sake of completeness.
 	 *
-	 * @param  string  $date
+	 * @param  mixed   $date
 	 * @param  string  $format
 	 * @return string
 	 */
-	public function firstDayOfMonth($date = 'current', $format = false)
+	public function firstDayOfMonth($date = null, $format = false)
 	{
-		if ($date == "current")
-			$result = date('Y-m-01');
-		else
-			$result = date('Y-m-01', strtotime($date));
+		$date = is_null($date) ? date('Y-m-d') : date('Y-m-d', strtotime($date));
 
 		if ($format)
 			$result = $this->date($result, $format);
@@ -707,16 +727,17 @@ class TetraText {
 	/**
 	 * Get the last day of the month. You can use the second argument to format the date (example: "F j, Y").
 	 *
-	 * @param  string  $date
+	 * @param  mixed   $date
 	 * @param  mixed   $format
 	 * @return string
 	 */
-	public function lastDayOfMonth($date = 'current', $format = false)
+	public function lastDayOfMonth($date = null, $format = false)
 	{
-		if ($date == "current") {
+		if (is_null($date)) {
 			$date = date('Y-m-d');
 		} else {
 			$date = date('Y-m-d', strtotime($date));
+
 			$originalMonth = substr($date, 5, 2);
 		}
 
@@ -789,17 +810,20 @@ class TetraText {
 	 * Format a date.
 	 *
 	 * @param  mixed   $date
-	 * @param  string  $format
+	 * @param  mixed   $format
 	 * @param  string  $adjust
 	 * @return string
 	 */
-	public function date($date = false, $format = 'F j, Y', $adjust = '')
+	public function date($date = null, $format = null, $adjust = '')
 	{
-		if ($date === false)
+		if (is_null($date))
 			$date = date('Y-m-d H:i:s');
 
 		if (is_null($date) || trim($date) == "" || $date == "0000-00-00" || $date == "0000-00-00 00:00:00")
-			return "";
+			return null;
+
+		if (is_null($format))
+			$format = config('format.defaults.date');
 
 		return date($format, strtotime($date.' '.$adjust));
 	}
@@ -812,8 +836,11 @@ class TetraText {
 	 * @param  string  $adjust
 	 * @return string
 	 */
-	public function dateTime($date = false, $format = 'F j, Y \a\t g:ia', $adjust = '')
+	public function dateTime($date = false, $format = null, $adjust = '')
 	{
+		if (is_null($format))
+			$format = config('format.defaults.datetime');
+
 		return $this->date($date, $format, $adjust);
 	}
 
@@ -858,10 +885,12 @@ class TetraText {
 			'second' => 1,
 		);
 
-		foreach ($intervals as $interval => $intervalSeconds) {
+		foreach ($intervals as $interval => $intervalSeconds)
+		{
 			$number = floor($seconds / $intervalSeconds);
 
-			if ($number > 0 && $date['interval'] == "") {
+			if ($number > 0 && $date['interval'] == "")
+			{
 				$date['number']   = $number;
 				$date['interval'] = $interval;
 			}
@@ -883,12 +912,13 @@ class TetraText {
 
 		if (!$date['past'])
 		{
-			if ($date['number'] == 1 && !in_array($date['interval'], array('minute', 'second'))) {
-				if ($date['interval'] == "day") {
+			if ($date['number'] == 1 && !in_array($date['interval'], array('minute', 'second')))
+			{
+				if ($date['interval'] == "day")
 					return 'until tomorrow';
-				} else {
+				else
 					return 'until next '.$date['interval'];
-				}
+
 			} else {
 				return 'for '.$date['number'].' more '.$date['interval'].'s';
 			}
@@ -912,7 +942,7 @@ class TetraText {
 	 * Separate a string into paragraphs.
 	 *
 	 * @param  string  $string
-	 * @param  integer $characters
+	 * @param  integer $charLimit
 	 * @return string
 	 */
 	public function paragraphs($string, $charLimit = 0)
