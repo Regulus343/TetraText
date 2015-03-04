@@ -1,6 +1,6 @@
 {
 	"name": "regulus/tetra-text",
-	"description": "A small text/string formatting composer package that formats phone numbers, numeric values, money values and more.",
+	"description": "A small text/string formatting composer package for Laravel 5 that formats numeric values, money values, phone numbers, and more.",
 	"license": "MIT",
 	"authors": [
 		{
