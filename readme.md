@@ -11,7 +11,7 @@ TetraText
 <a name="installation"></a>
 ## Installation
 
-To install TetraText, make sure "regulus/tetra-text" has been added to Laravel 4's `composer.json` file.
+To install TetraText, make sure "regulus/tetra-text" has been added to Laravel 5's `composer.json` file.
 
 	"require": {
 		"regulus/tetra-text": "dev-master"
