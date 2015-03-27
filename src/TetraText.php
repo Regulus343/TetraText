@@ -7,11 +7,10 @@
 
 		created by Cody Jassman
 		v0.5.0
-		last updated on March 3, 2014
+		last updated on March 26, 2014
 ----------------------------------------------------------------------------------------------------------*/
 
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\URL;
@@ -558,7 +557,7 @@ class TetraText {
 	 */
 	public function entities($value)
 	{
-		return htmlentities($value, ENT_QUOTES, Config::get('tetra-text::encoding'), false);
+		return htmlentities($value, ENT_QUOTES, config('format.encoding'), false);
 	}
 
 	/**
