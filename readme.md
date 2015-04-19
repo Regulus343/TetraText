@@ -14,7 +14,7 @@ TetraText
 To install TetraText, make sure "regulus/tetra-text" has been added to Laravel 5's `composer.json` file.
 
 	"require": {
-		"regulus/tetra-text": "dev-master"
+		"regulus/tetra-text": "0.5.*"
 	},
 
 Then run `php composer.phar update` from the command line. Composer will install the TetraText package. Now, all you have to do is register the service provider and set up TetraText's alias in `config/app.php`. Add this to the `providers` array:
