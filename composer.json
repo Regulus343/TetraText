@@ -21,6 +21,5 @@
 		"psr-4": {
 			"Regulus\\TetraText\\": "src/"
 		}
-	},
-	"minimum-stability": "stable"
+	}
 }
