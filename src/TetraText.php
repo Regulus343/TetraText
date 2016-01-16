@@ -6,8 +6,8 @@
 		money values and more. There are also some limited date functions available.
 
 		created by Cody Jassman
-		v0.5.1
-		last updated on October 20, 2014
+		v0.5.2
+		last updated on January 15, 2016
 ----------------------------------------------------------------------------------------------------------*/
 
 use Illuminate\Support\Facades\DB;
@@ -592,9 +592,10 @@ class TetraText {
 	 * @param  string  $fieldName
 	 * @param  mixed   $ignoreId
 	 * @param  mixed   $charLimit
-	 * @return mixed
+	 * @param  array   $otherMatchingValues
+	 * @return string
 	 */
-	public function uniqueSlug($string, $table, $fieldName = 'slug', $ignoreId = false, $charLimit = false)
+	public function uniqueSlug($string, $table, $fieldName = 'slug', $ignoreId = null, $charLimit = false, $otherMatchingValues = [])
 	{
 		$slug = $this->slug($string, $charLimit);
 
@@ -610,18 +611,12 @@ class TetraText {
 	 * @param  mixed   $ignoreId
 	 * @param  boolean $filename
 	 * @param  mixed   $charLimit
-	 * @return mixed
+	 * @param  array   $otherMatchingValues
+	 * @return string
 	 */
-	public function unique($string, $table, $fieldName = 'name', $ignoreId = false, $filename = false, $charLimit = false)
+	public function unique($string, $table, $fieldName = 'name', $ignoreId = null, $filename = false, $charLimit = false, $otherMatchingValues = [])
 	{
-		if ($ignoreId)
-			$exists = DB::table($table)->where($fieldName, '=', $string)->where('id', '!=', $ignoreId)->count();
-		else
-			$exists = DB::table($table)->where($fieldName, '=', $string)->count();
-
-		$extension = $filename ? File::extension($string) : '';
-
-		if ((int) $exists)
+		if (!$this->recordIsUnique($string, $table, $fieldName, $ignoreId, $filename, $charLimit, $otherMatchingValues))
 		{
 			$uniqueFound = false;
 
@@ -630,32 +625,56 @@ class TetraText {
 
 			$originalString = $string;
 
-			for ($s = 2; $s <= 99; $s++) {
-				if (!$uniqueFound)
-				{
-					$string = $originalString;
-					$suffix = '-'.$s;
+			$suffix = 2;
+			while (!$uniqueFound)
+			{
+				if ($this->recordIsUnique($string, $table, $fieldName, $ignoreId, $filename, $charLimit, $otherMatchingValues, $suffix))
+					$uniqueFound = true;
 
-					if ($filename)
-						$string = str_replace('.'.$extension, '', $string).$suffix.'.'.$extension;
-					else
-						$string .= $suffix;
-
-					if ($ignoreId)
-						$exists = DB::table($table)->where($fieldName, '=', $string)->where('id', '!=', $ignoreId)->count();
-					else
-						$exists = DB::table($table)->where($fieldName, '=', $string)->count();
-
-					if (!$exists)
-						$uniqueFound = true;
-				}
+				$suffix ++;
 			}
-
-			if (!$uniqueFound)
-				return false;
 		}
 
 		return $string;
+	}
+
+	/**
+	 * Create a unique string for a table field. You may optionally limit the number of characters.
+	 *
+	 * @param  string  $string
+	 * @param  string  $table
+	 * @param  string  $fieldName
+	 * @param  mixed   $ignoreId
+	 * @param  boolean $filename
+	 * @param  mixed   $charLimit
+	 * @param  array   $otherMatchingValues
+	 * @param  mixed   $suffix
+	 * @return string
+	 */
+	private function recordIsUnique($string, $table, $fieldName = 'name', $ignoreId = null, $filename = false, $charLimit = false, $otherMatchingValues = [], $suffix = null)
+	{
+		$originalString = $string;
+
+		$existingRecord = DB::table($table)->where($fieldName, $string);
+
+		$suffix = !is_null($suffix) ? '-'.$suffix : "";
+
+		if ($filename)
+			$string = str_replace('.'.File::extension($string), '', $string).$suffix.'.'.$extension;
+		else
+			$string .= $suffix;
+
+		$existingRecord = DB::table($table)->where($fieldName, $string);
+
+		if ($ignoreId)
+			$existingRecord->where('id', '!=', $ignoreId);
+
+		foreach ($otherMatchingValues as $otherFieldName => $otherValue)
+		{
+			$existingRecord->where($otherFieldName, $otherValue);
+		}
+
+		return !$existingRecord->count();
 	}
 
 	/**
