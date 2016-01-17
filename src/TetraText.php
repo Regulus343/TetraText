@@ -7,7 +7,7 @@
 
 		created by Cody Jassman
 		v0.5.2
-		last updated on January 15, 2016
+		last updated on January 16, 2016
 ----------------------------------------------------------------------------------------------------------*/
 
 use Illuminate\Support\Facades\DB;
@@ -603,10 +603,12 @@ class TetraText {
 	}
 
 	/**
-	 * Create a unique string for a table field. You may optionally limit the number of characters.
+	 * Create a unique string for a table field. You may optionally limit the number of characters. "tableModel" can either be a string of
+	 * a table name or a model query instantiation such as "Record::query()". Using a model will allow you to exclude soft-deleted records
+	 * from the checking process.
 	 *
 	 * @param  string  $string
-	 * @param  string  $table
+	 * @param  mixed   $tableModel
 	 * @param  string  $fieldName
 	 * @param  mixed   $ignoreId
 	 * @param  boolean $filename
@@ -614,9 +616,14 @@ class TetraText {
 	 * @param  array   $otherMatchingValues
 	 * @return string
 	 */
-	public function unique($string, $table, $fieldName = 'name', $ignoreId = null, $filename = false, $charLimit = false, $otherMatchingValues = [])
+	public function unique($string, $tableModel, $fieldName = 'name', $ignoreId = null, $filename = false, $charLimit = false, $otherMatchingValues = [])
 	{
-		if (!$this->recordIsUnique($string, $table, $fieldName, $ignoreId, $filename, $charLimit, $otherMatchingValues))
+		\DB::enableQueryLog();
+
+		$record = $this->recordIsUnique($string, $tableModel, $fieldName, $ignoreId, $filename, $charLimit, $otherMatchingValues);
+		$string = $record->string;
+
+		if (!$record->unique)
 		{
 			$uniqueFound = false;
 
@@ -628,8 +635,13 @@ class TetraText {
 			$suffix = 2;
 			while (!$uniqueFound)
 			{
-				if ($this->recordIsUnique($string, $table, $fieldName, $ignoreId, $filename, $charLimit, $otherMatchingValues, $suffix))
+				$record = $this->recordIsUnique($string, $tableModel, $fieldName, $ignoreId, $filename, $charLimit, $otherMatchingValues, $suffix);
+				$string = $record->string;
+
+				if ($record->unique)
+				{
 					$uniqueFound = true;
+				}
 
 				$suffix ++;
 			}
@@ -642,20 +654,25 @@ class TetraText {
 	 * Create a unique string for a table field. You may optionally limit the number of characters.
 	 *
 	 * @param  string  $string
-	 * @param  string  $table
+	 * @param  mixed   $tableModel
 	 * @param  string  $fieldName
 	 * @param  mixed   $ignoreId
 	 * @param  boolean $filename
 	 * @param  mixed   $charLimit
 	 * @param  array   $otherMatchingValues
 	 * @param  mixed   $suffix
-	 * @return string
+	 * @return object
 	 */
-	private function recordIsUnique($string, $table, $fieldName = 'name', $ignoreId = null, $filename = false, $charLimit = false, $otherMatchingValues = [], $suffix = null)
+	private function recordIsUnique($string, $tableModel, $fieldName = 'name', $ignoreId = null, $filename = false, $charLimit = false, $otherMatchingValues = [], $suffix = null)
 	{
 		$originalString = $string;
 
-		$existingRecord = DB::table($table)->where($fieldName, $string);
+		if (is_string($tableModel))
+			$existingRecord = DB::table($tableModel);
+		else
+			$existingRecord = $tableModel;
+
+		$existingRecord->where($fieldName, $string);
 
 		$suffix = !is_null($suffix) ? '-'.$suffix : "";
 
@@ -664,7 +681,7 @@ class TetraText {
 		else
 			$string .= $suffix;
 
-		$existingRecord = DB::table($table)->where($fieldName, $string);
+		$existingRecord->where($fieldName, $string);
 
 		if ($ignoreId)
 			$existingRecord->where('id', '!=', $ignoreId);
@@ -674,7 +691,10 @@ class TetraText {
 			$existingRecord->where($otherFieldName, $otherValue);
 		}
 
-		return !$existingRecord->count();
+		return (object) [
+			'string' => $string,
+			'unique' => !$existingRecord->count(),
+		];
 	}
 
 	/**
