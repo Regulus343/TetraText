@@ -6,8 +6,8 @@
 		money values and more. There are also some limited date functions available.
 
 		created by Cody Jassman
-		v0.5.2
-		last updated on January 16, 2016
+		v0.5.3
+		last updated on February 10, 2016
 ----------------------------------------------------------------------------------------------------------*/
 
 use Illuminate\Support\Facades\DB;
@@ -426,36 +426,93 @@ class TetraText {
 		if (empty($methodMatch))
 			return null;
 
-		$parameters = $methodMatch[1];
-		if ($parameters != "")
-		{
-			$parameters = explode(',', $parameters);
-			for ($p = 0; $p < count($parameters); $p++)
-			{
-				$parameters[$p] = trim($parameters[$p]);
-
-				if ((substr($parameters[$p], 0, 1) == "'" && substr($parameters[$p], -1) == "'") || (substr($parameters[$p], 0, 1) == '"' && substr($parameters[$p], -1) == '"'))
-				{
-					$parameters[$p] = (string) substr($parameters[$p], 1, (strlen($parameters[$p]) - 2));
-				} else {
-					if (strtolower($parameters[$p]) == "true")
-						$parameters[$p] = true;
-					else if (strtolower($parameters[$p]) == "false")
-						$parameters[$p] = false;
-					else if (strtolower($parameters[$p]) == "null")
-						$parameters[$p] = null;
-					else
-						$parameters[$p] = (int) $parameters[$p];
-				}
-			}
-		} else {
+		if ($methodMatch[1] != "")
+			$parameters = $this->getParametersFromString($methodMatch[1]);
+		else
 			$parameters = [];
-		}
 
 		return [
 			'name'       => str_replace($methodMatch[0], '', $method),
 			'parameters' => $parameters,
 		];
+	}
+
+	/**
+	 * Get an array of parameters from a string.
+	 *
+	 * @param  string  $parametersString
+	 * @return array
+	 */
+	public function getParametersFromString($parametersString)
+	{
+		$parameters          = explode(',', $parametersString);
+		$parametersFormatted = [];
+		$skip                = [];
+
+		for ($p = 0; $p < count($parameters); $p++)
+		{
+			$parameters[$p] = ltrim($parameters[$p]);
+
+			if (substr($parameters[$p], 0, 1) == "'" || substr($parameters[$p], 0, 1) == '"')
+			{
+				$parameter   = (string) substr($parameters[$p], 1, strlen($parameters[$p]));
+				$singleQuote = substr($parameters[$p], 0, 1) == "'";
+
+				if (($singleQuote && substr($parameters[$p], -1) != "'") || (!$singleQuote && substr($parameters[$p], -1) != '"'))
+				{
+					$n = $p;
+
+					$closingQuoteFound = false;
+					while (!$closingQuoteFound)
+					{
+						$n ++;
+
+						$positionQuoteFound = strpos($parameters[$n], ($singleQuote ? "'" : '"'));
+
+						if ($positionQuoteFound)
+						{
+							$parameter .= ','.substr($parameters[$n], 0, ($positionQuoteFound));
+
+							$closingQuoteFound = true;
+
+							$p = $n;
+						}
+						else
+						{
+							$parameter .= ','.$parameters[$n];
+						}
+					}
+				}
+
+				$parametersFormatted[] = $parameter;
+			}
+			else
+			{
+				$parameter = $parameters[$p];
+
+				if (strtolower($parameter) == "true")
+				{
+					$parametersFormatted[] = true;
+				}
+				else if (strtolower($parameter) == "false")
+				{
+					$parametersFormatted[] = false;
+				}
+				else if (strtolower($parameter) == "null")
+				{
+					$parametersFormatted[] = null;
+				}
+				else
+				{
+					if (strpos($parameter, '.'))
+						$parametersFormatted[] = (float) $parameter;
+					else
+						$parametersFormatted[] = (int) $parameter;
+				}
+			}
+		}
+
+		return $parametersFormatted;
 	}
 
 	/**
@@ -588,18 +645,18 @@ class TetraText {
 	 * Create a unique URI slug from a string.
 	 *
 	 * @param  string  $string
-	 * @param  string  $table
+	 * @param  mixed   $tableModel
 	 * @param  string  $fieldName
 	 * @param  mixed   $ignoreId
 	 * @param  mixed   $charLimit
 	 * @param  array   $otherMatchingValues
 	 * @return string
 	 */
-	public function uniqueSlug($string, $table, $fieldName = 'slug', $ignoreId = null, $charLimit = false, $otherMatchingValues = [])
+	public function uniqueSlug($string, $tableModel, $fieldName = 'slug', $ignoreId = null, $charLimit = false, $otherMatchingValues = [])
 	{
 		$slug = $this->slug($string, $charLimit);
 
-		return $this->unique($slug, $table, $fieldName, $ignoreId, false, $charLimit);
+		return $this->unique($slug, $tableModel, $fieldName, $ignoreId, false, $charLimit);
 	}
 
 	/**
@@ -626,9 +683,6 @@ class TetraText {
 		if (!$record->unique)
 		{
 			$uniqueFound = false;
-
-			if ($charLimit)
-				$string = substr($string, 0, ($charLimit - 2));
 
 			$originalString = $string;
 
@@ -663,7 +717,7 @@ class TetraText {
 	 * @param  mixed   $suffix
 	 * @return object
 	 */
-	private function recordIsUnique($string, $tableModel, $fieldName = 'name', $ignoreId = null, $filename = false, $charLimit = false, $otherMatchingValues = [], $suffix = null)
+	public function recordIsUnique($string, $tableModel, $fieldName = 'name', $ignoreId = null, $filename = false, $charLimit = false, $otherMatchingValues = [], $suffix = null)
 	{
 		$originalString = $string;
 
@@ -680,6 +734,27 @@ class TetraText {
 			$string = str_replace('.'.File::extension($string), '', $string).$suffix.'.'.$extension;
 		else
 			$string .= $suffix;
+
+		// enforce character limit with fewer characters to make room for suffix
+		if ($suffix < 10)
+		{
+			$charLimit -= 2;
+		}
+		else if ($suffix >= 10 && $suffix < 100)
+		{
+			$charLimit -= 2;
+		}
+		else if ($suffix >= 100 && $suffix < 1000)
+		{
+			$charLimit -= 3;
+		}
+		else if ($suffix >= 1000)
+		{
+			$charLimit -= 4;
+		}
+
+		if ($charLimit)
+			$string = substr($string, 0, $charLimit);
 
 		$existingRecord->where($fieldName, $string);
 
