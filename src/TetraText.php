@@ -6,8 +6,8 @@
 		money values and more. There are also some limited date functions available.
 
 		created by Cody Jassman
-		v0.5.3
-		last updated on February 10, 2016
+		v0.6.0
+		last updated on February 11, 2016
 ----------------------------------------------------------------------------------------------------------*/
 
 use Illuminate\Support\Facades\DB;
@@ -158,41 +158,49 @@ class TetraText {
 	/**
 	 * Format a Canadian/American phone number.
 	 *
-	 * @param  string  $phoneNumber
-	 * @param  integer $digits
-	 * @param  string  $separator
-	 * @param  boolean $areaCodeBrackets
+	 * @param  string  $number
+	 * @param  array   $config
 	 * @return string
 	 */
-	public function phone($phoneNumber, $digits = null, $separator = null, $areaCodeBrackets = null)
+	public function phone($number, $config = [])
 	{
-		if (is_null($phoneNumber) || $phoneNumber == "")
+		if (is_null($number) || $number == "")
 			return null;
 
-		$phoneNumber = $this->numeric($phoneNumber, false);
+		$number = strtolower($number);
 
-		if (is_null($digits))
-			$digits = config('format.defaults.phone.digits');
+		// check for extension
+		$extension = false;
+		if (strpos($number, 'x') !== false)
+		{
+			$number      = str_replace('ext', 'x', $number);
+			$numberArray = explode('x', $number);
+			if (count($numberArray) == 2)
+			{
+				$number    = $numberArray[0];
+				$extension = $this->numeric(str_replace('.', '', $numberArray[1]), false);
+			}
+		}
 
-		if (is_null($separator))
-			$separator = config('format.defaults.phone.separator');
+		$number = $this->numeric($number, false);
+		$config = array_merge($this->camelizeKeys(config('format.defaults.phone')), $config);
 
-		if (is_null($areaCodeBrackets))
-			$areaCodeBrackets = config('format.defaults.phone.area_code_brackets');
+		if (!in_array($config['digits'], [10, 11]))
+			$config['digits'] = 10;
 
-		if ($areaCodeBrackets)
+		if ($config['areaCodeBrackets'])
 		{
 			$bracketL   = "(";
 			$bracketR   = ") ";
-			$firstDigit = $digits == 11 ? '1 ' : '';
+			$firstDigit = $config['digits'] == 11 ? '1 ' : '';
 		} else {
 			$bracketL   = "";
-			$bracketR   = $separator;
-			$firstDigit = $digits == 11 ? '1'.$separator : '';
+			$bracketR   = $config['separator'];
+			$firstDigit = $config['digits'] == 11 ? '1'.$config['separator'] : '';
 		}
 
-		$length = strlen($phoneNumber);
-		$offset = $length - $digits;
+		$length = strlen($number);
+		$offset = $length - $config['digits'];
 
 		if ($length < 7)
 			return null;
@@ -200,18 +208,24 @@ class TetraText {
 		if ($offset < 0)
 			$offset = 0;
 
-		if ($digits == 11)
+		if ($config['digits'] == 11)
 		{
 			$offset ++;
 
 			//if length is too short, add 1 to make 11 digit phone number
 			if ($length == 10)
-				$phoneNumber = '1'.$phoneNumber;
+				$number = '1'.$number;
 		}
 
-		$phoneNumber = $firstDigit.$bracketL.substr($phoneNumber, $offset, 3).$bracketR.substr($phoneNumber, ($offset + 3), 3).$separator.substr($phoneNumber, ($offset + 6), 4);
+		$formattedNumber  = $firstDigit.$bracketL.substr($number, $offset, 3).$bracketR.substr($number, ($offset + 3), 3);
+		$formattedNumber .= $config['separator'].substr($number, ($offset + 6), 4);
 
-		return $phoneNumber;
+		if (!$config['stripExtension'] && $extension !== false)
+		{
+			$formattedNumber .= $config['extensionSeparator'].$extension;
+		}
+
+		return $formattedNumber;
 	}
 
 	/**
@@ -381,6 +395,38 @@ class TetraText {
 	}
 
 	/**
+	 * Make the keys of an array or object camel case.
+	 *
+	 * @param  array   $array
+	 * @return array
+	 */
+	public function camelizeKeys($array)
+	{
+		$formattedArray = [];
+
+		$object = is_object($array);
+
+		foreach ($array as $key => $value)
+		{
+			$key = camel_case($key);
+
+			if (is_array($value) || is_object($value))
+			{
+				$formattedArray[$key] = $this->camelizeKeys($value);
+			}
+			else
+			{
+				$formattedArray[$key] = $value;
+			}
+		}
+
+		if ($object)
+			$formattedArray = (object) $formattedArray;
+
+		return $formattedArray;
+	}
+
+	/**
 	 * Get the values of a specific attribute or method from an array of objects and place them in an array.
 	 *
 	 * @param  array   $objects
@@ -393,15 +439,20 @@ class TetraText {
 
 		foreach ($objects as $object)
 		{
-			if (is_null($attribute)) {
+			if (is_null($attribute))
+			{
 				$item = $object;
-			} else {
+			}
+			else
+			{
 				$method = $this->getMethodFromString($attribute);
 
 				if (!is_null($method)) //attribute is a method of object; call it
 				{
 					$item = call_user_func_array([$object, $method['name']], $method['parameters']);
-				} else {
+				}
+				else
+				{
 					$item = $object->{$attribute};
 				}
 			}
@@ -421,7 +472,7 @@ class TetraText {
 	 */
 	public function getMethodFromString($method)
 	{
-		preg_match('/\(([A-Za-z0-9\ \'\"\,]*)\)/', $method, $methodMatch);
+		preg_match('/\(([A-Za-z0-9\ \'\"\,\.\-]*)\)/', $method, $methodMatch);
 
 		if (empty($methodMatch))
 			return null;
@@ -455,33 +506,35 @@ class TetraText {
 
 			if (substr($parameters[$p], 0, 1) == "'" || substr($parameters[$p], 0, 1) == '"')
 			{
-				$parameter   = (string) substr($parameters[$p], 1, strlen($parameters[$p]));
+				$parameter   = substr($parameters[$p], 1, strlen($parameters[$p]));
 				$singleQuote = substr($parameters[$p], 0, 1) == "'";
 
+				// if parameter doesn't end with quotation mark, there is a comma inside the full parameter string
 				if (($singleQuote && substr($parameters[$p], -1) != "'") || (!$singleQuote && substr($parameters[$p], -1) != '"'))
 				{
-					$n = $p;
-
 					$closingQuoteFound = false;
-					while (!$closingQuoteFound)
+					while (!$closingQuoteFound) // loop through subsequent array items until closing quotation mark is found
 					{
-						$n ++;
+						$p ++;
 
-						$positionQuoteFound = strpos($parameters[$n], ($singleQuote ? "'" : '"'));
+						$positionQuoteFound = strpos($parameters[$p], ($singleQuote ? "'" : '"'));
 
 						if ($positionQuoteFound)
 						{
-							$parameter .= ','.substr($parameters[$n], 0, ($positionQuoteFound));
+							$parameter .= ','.substr($parameters[$p], 0, $positionQuoteFound);
 
 							$closingQuoteFound = true;
-
-							$p = $n;
 						}
 						else
 						{
-							$parameter .= ','.$parameters[$n];
+							$parameter .= ','.$parameters[$p];
 						}
 					}
+				}
+				else
+				{
+					//trim trailing quote off of parameter
+					$parameter = substr($parameter, 0, (strlen($parameter) - 1));
 				}
 
 				$parametersFormatted[] = $parameter;
@@ -592,11 +645,11 @@ class TetraText {
 		$itemFormatted = strtolower($item);
 		$prefix        = 'a';
 
-		//use "an" if item begins with a vowel
+		// use "an" if item begins with a vowel
 		if (in_array(substr($itemFormatted, 0, 1), array('a', 'e', 'i', 'o', 'u')))
 			$prefix .= 'n';
 
-		//use "an" if item is an acronym and starts with a letter that has a vowel sound
+		// use "an" if item is an acronym and starts with a letter that has a vowel sound
 		if (substr($item, 0, 2) == substr(strtoupper($item), 0, 2)
 		&& in_array(substr($itemFormatted, 0, 1), array('a', 'e', 'f', 'h', 'i', 'l', 'm', 'n', 'o', 'r', 's', 'x')))
 			$prefix .= 'n';
@@ -646,62 +699,25 @@ class TetraText {
 	 *
 	 * @param  string  $string
 	 * @param  mixed   $tableModel
-	 * @param  string  $fieldName
-	 * @param  mixed   $ignoreId
-	 * @param  mixed   $charLimit
-	 * @param  array   $otherMatchingValues
+	 * @param  array   $config
 	 * @return string
 	 */
-	public function uniqueSlug($string, $tableModel, $fieldName = 'slug', $ignoreId = null, $charLimit = false, $otherMatchingValues = [])
+	public function uniqueSlug($string, $tableModel, $config = [])
 	{
-		$slug = $this->slug($string, $charLimit);
+		$defaultConfig = [
+			'field'          => 'slug',
+			'model'          => config('format.defaults.unique.model'),
+			'ignoreId'       => null,
+			'charLimit'      => config('format.defaults.unique.char_limit'),
+			'softDelete'     => config('format.defaults.unique.soft_delete'),
+			'matchingValues' => [],
+		];
 
-		return $this->unique($slug, $tableModel, $fieldName, $ignoreId, false, $charLimit);
-	}
+		$config = array_merge($defaultConfig, $config);
 
-	/**
-	 * Create a unique string for a table field. You may optionally limit the number of characters. "tableModel" can either be a string of
-	 * a table name or a model query instantiation such as "Record::query()". Using a model will allow you to exclude soft-deleted records
-	 * from the checking process.
-	 *
-	 * @param  string  $string
-	 * @param  mixed   $tableModel
-	 * @param  string  $fieldName
-	 * @param  mixed   $ignoreId
-	 * @param  boolean $filename
-	 * @param  mixed   $charLimit
-	 * @param  array   $otherMatchingValues
-	 * @return string
-	 */
-	public function unique($string, $tableModel, $fieldName = 'name', $ignoreId = null, $filename = false, $charLimit = false, $otherMatchingValues = [])
-	{
-		\DB::enableQueryLog();
+		$slug = $this->slug($string, $config['charLimit']);
 
-		$record = $this->recordIsUnique($string, $tableModel, $fieldName, $ignoreId, $filename, $charLimit, $otherMatchingValues);
-		$string = $record->string;
-
-		if (!$record->unique)
-		{
-			$uniqueFound = false;
-
-			$originalString = $string;
-
-			$suffix = 2;
-			while (!$uniqueFound)
-			{
-				$record = $this->recordIsUnique($string, $tableModel, $fieldName, $ignoreId, $filename, $charLimit, $otherMatchingValues, $suffix);
-				$string = $record->string;
-
-				if ($record->unique)
-				{
-					$uniqueFound = true;
-				}
-
-				$suffix ++;
-			}
-		}
-
-		return $string;
+		return $this->unique($slug, $tableModel, $config);
 	}
 
 	/**
@@ -709,66 +725,156 @@ class TetraText {
 	 *
 	 * @param  string  $string
 	 * @param  mixed   $tableModel
-	 * @param  string  $fieldName
-	 * @param  mixed   $ignoreId
-	 * @param  boolean $filename
-	 * @param  mixed   $charLimit
-	 * @param  array   $otherMatchingValues
-	 * @param  mixed   $suffix
+	 * @param  array   $config
+	 * @return string
+	 */
+	public function unique($string, $tableModel, $config = [])
+	{
+		$defaultConfig = [
+			'field'          => 'name',
+			'model'          => config('format.defaults.unique.model'),
+			'ignoreId'       => null,
+			'filename'       => false,
+			'charLimit'      => config('format.defaults.unique.char_limit'),
+			'softDelete'     => config('format.defaults.unique.soft_delete'),
+			'matchingValues' => [],
+		];
+
+		$config = array_merge($defaultConfig, $config);
+
+		$uniqueFound = false;
+
+		while (!$uniqueFound)
+		{
+			$result = $this->stringIsUnique($string, $tableModel, $config);
+
+			if ($result->unique)
+			{
+				$string = $result->string;
+
+				$uniqueFound = true;
+			}
+
+			if (!isset($config['suffix']))
+				$config['suffix'] = 2;
+			else
+				$config['suffix'] ++;
+		}
+
+		return $string;
+	}
+
+	/**
+	 * Check if a particular string is unique for the specified table or model.
+	 *
+	 * @param  string  $string
+	 * @param  mixed   $tableModel
+	 * @param  array   $config
 	 * @return object
 	 */
-	public function recordIsUnique($string, $tableModel, $fieldName = 'name', $ignoreId = null, $filename = false, $charLimit = false, $otherMatchingValues = [], $suffix = null)
+	public function stringIsUnique($string, $tableModel, $config = [])
 	{
-		$originalString = $string;
+		$defaultConfig = [
+			'field'          => 'name',
+			'model'          => config('format.defaults.unique.model'),
+			'ignoreId'       => null,
+			'filename'       => false,
+			'charLimit'      => config('format.defaults.unique.char_limit'),
+			'softDelete'     => config('format.defaults.unique.soft_delete'),
+			'suffix'         => null,
+			'matchingValues' => [],
+		];
 
-		if (is_string($tableModel))
-			$existingRecord = DB::table($tableModel);
+		$config = array_merge($defaultConfig, $config);
+
+		if ($config['model'])
+			$existingRecord = $tableModel::query();
 		else
-			$existingRecord = $tableModel;
+			$existingRecord = DB::table($tableModel);
 
-		$existingRecord->where($fieldName, $string);
+		$suffix = !is_null($config['suffix']) ? '-'.$config['suffix'] : "";
 
-		$suffix = !is_null($suffix) ? '-'.$suffix : "";
+		// enforce character limit with fewer characters to make room for suffix
+		if ($suffix != "" && $config['charLimit'])
+		{
+			$suffix = (int) $suffix;
 
-		if ($filename)
+			if ($suffix < 10)
+			{
+				$config['charLimit'] -= 2;
+			}
+			else if ($suffix >= 10 && $suffix < 100)
+			{
+				$config['charLimit'] -= 2;
+			}
+			else if ($suffix >= 100 && $suffix < 1000)
+			{
+				$config['charLimit'] -= 3;
+			}
+			else if ($suffix >= 1000)
+			{
+				$config['charLimit'] -= 4;
+			}
+		}
+
+		if ($config['charLimit'])
+			$string = substr($string, 0, $config['charLimit']);
+
+		if ($config['filename'])
 			$string = str_replace('.'.File::extension($string), '', $string).$suffix.'.'.$extension;
 		else
 			$string .= $suffix;
 
-		// enforce character limit with fewer characters to make room for suffix
-		if ($suffix < 10)
+		$existingRecord->where($config['field'], $string);
+
+		if ($config['ignoreId'])
+			$existingRecord->where('id', '!=', $config['ignoreId']);
+
+		if ($config['softDelete'])
 		{
-			$charLimit -= 2;
-		}
-		else if ($suffix >= 10 && $suffix < 100)
-		{
-			$charLimit -= 2;
-		}
-		else if ($suffix >= 100 && $suffix < 1000)
-		{
-			$charLimit -= 3;
-		}
-		else if ($suffix >= 1000)
-		{
-			$charLimit -= 4;
+			$config['matchingValues']['deleted_at'] = null;
 		}
 
-		if ($charLimit)
-			$string = substr($string, 0, $charLimit);
-
-		$existingRecord->where($fieldName, $string);
-
-		if ($ignoreId)
-			$existingRecord->where('id', '!=', $ignoreId);
-
-		foreach ($otherMatchingValues as $otherFieldName => $otherValue)
+		if (!empty($config['matchingValues']))
 		{
-			$existingRecord->where($otherFieldName, $otherValue);
+			$operators = [
+				'!=',
+				'>',
+				'<',
+				'>=',
+				'<=',
+			];
+
+			foreach ($config['matchingValues'] as $matchingField => $matchingValue)
+			{
+				if (is_array($matchingValue))
+				{
+					$existingRecord->whereIn($matchingField, $matchingValue);
+				}
+				else
+				{
+					$operator = "=";
+
+					foreach ($operators as $operatorChecked)
+					{
+						if (substr($matchingValue, 0, strlen($operatorChecked)) == $operatorChecked)
+						{
+							$operator = $operatorChecked;
+
+							$matchingValue = ltrim(substr($matchingValue, strlen($operator)));
+						}
+					}
+
+					$existingRecord->where($matchingField, $operator, $matchingValue);
+				}
+			}
 		}
+
+		$count = $existingRecord->count();
 
 		return (object) [
 			'string' => $string,
-			'unique' => !$existingRecord->count(),
+			'unique' => !$count,
 		];
 	}
 
@@ -846,9 +952,12 @@ class TetraText {
 	 */
 	public function lastDayOfMonth($date = null, $format = false)
 	{
-		if (is_null($date)) {
+		if (is_null($date))
+		{
 			$date = date('Y-m-d');
-		} else {
+		}
+		else
+		{
 			$date = date('Y-m-d', strtotime($date));
 
 			$originalMonth = substr($date, 5, 2);
@@ -859,26 +968,36 @@ class TetraText {
 		$day    = substr($date, 8, 2);
 		$result = "";
 
-		//prevent invalid dates having wrong month assigned (June 31 = July, etc...)
+		// prevent invalid dates having wrong month assigned (June 31 = July, etc...)
 		if (isset($originalMonth) && $month != $originalMonth)
 			$month = $originalMonth;
 
-		if (in_array($month, ['01', '03', '05', '07', '08', '10', '12'])) {
+		if (in_array($month, ['01', '03', '05', '07', '08', '10', '12']))
+		{
 			$lastDay = 31;
-		} else if (in_array($month, ['04', '06', '09', '11'])) {
+		}
+		else if (in_array($month, ['04', '06', '09', '11']))
+		{
 			$lastDay = 30;
-		} else if ($month == "02") {
-			if (($year/4) == round($year/4)) {
+		}
+		else if ($month == "02")
+		{
+			if (($year/4) == round($year/4))
+			{
 				if (($year/100) == round($year/100))
 				{
 					if (($year/400) == round($year/400))
 						$lastDay = 29;
 					else
 						$lastDay = 28;
-				} else {
+				}
+				else
+				{
 					$lastDay = 29;
 				}
-			} else {
+			}
+			else
+			{
 				$lastDay = 28;
 			}
 		}
@@ -949,7 +1068,7 @@ class TetraText {
 	 * @param  string  $adjust
 	 * @return string
 	 */
-	public function dateTime($date = false, $format = null, $adjust = '')
+	public function dateTime($date = null, $format = null, $adjust = '')
 	{
 		if (is_null($format))
 			$format = config('format.defaults.datetime');
@@ -964,12 +1083,12 @@ class TetraText {
 	 * @param  mixed   $dateEnd
 	 * @return string
 	 */
-	public function dateToInterval($dateStart, $dateEnd = false)
+	public function dateToInterval($dateStart, $dateEnd = null)
 	{
 		if (!is_int($dateStart))
 			$dateStart = strtotime($dateStart);
 
-		if (!$dateEnd) {
+		if (is_null($dateEnd)) {
 			$dateEnd = time();
 		} else {
 			if (!is_int($dateEnd))
@@ -1013,13 +1132,13 @@ class TetraText {
 	}
 
 	/**
-	 * Convert a date to a time interval. Used in conjuction with dateToIntervalStr() to get dates like "33 minutes ago"
+	 * Convert a date to a time interval. Used in conjuction with dateToIntervalStr() to get dates like "33 minutes ago".
 	 *
 	 * @param  string  $dateStart
 	 * @param  mixed   $dateEnd
 	 * @return string
 	 */
-	public function dateToIntervalStr($dateStart, $dateEnd = false)
+	public function dateToIntervalStr($dateStart, $dateEnd = null)
 	{
 		$date = $this->dateToInterval($dateStart, $dateEnd);
 
@@ -1070,61 +1189,250 @@ class TetraText {
 	 * Limit a string to a number of characters.
 	 *
 	 * @param  string  $string
-	 * @param  integer $characters
-	 * @param  string  $end
-	 * @param  mixed   $endLink
-	 * @param  boolean $paragraphs
+	 * @param  mixed   $config
+	 * @param  array   $alternateConfig
 	 * @return string
 	 */
-	public function charLimit($string = '', $characters = 140, $end = true, $endLink = false, $paragraphs = false)
+	public function charLimit($string, $config = [], $alternateConfig = [])
 	{
-		//if end is set to null or false, set it to an empty string
-		if (is_null($end) || (is_bool($end) && !$end))
-			$end = "";
+		if (is_integer($config))
+			$alternateConfig['charLimit'] = true;
+		else
+			$config['charLimit'] = true;
 
-		//if end is set to true, use "..." as a default
-		if (is_bool($end) && $end)
-			$end = "...";
-
-		//convert HTML special characters if end string is not HTML
-		if ($end == strip_tags($end))
-			$end = $this->entities($end);
-
-		//if end link is not a full URL, convert it into one
-		if ($endLink && substr($end, 0, 4) != "http")
-			$endLink = URL::to($endLink);
-
-		$formattedString = substr($string, 0, $characters);
-		if ($formattedString != $string) {
-			if ($endLink)
-				$end = ' <a href="'.$endLink.'" class="read-more">'.$end.'</a>';
-
-			$formattedString .= $end;
-		}
-
-		if ($paragraphs)
-			$formattedString = $this->paragraphs($formattedString);
-
-		return $formattedString;
+		return $this->stringLimit($string, $config, $alternateConfig);
 	}
 
 	/**
-	 * Get a random string at a specified length.
+	 * Limit a string to a number of words.
 	 *
-	 * @param  integer $length
+	 * @param  string  $string
+	 * @param  mixed   $config
+	 * @param  array   $alternateConfig
 	 * @return string
 	 */
-	public function getRandomString($length = 32)
+	public function wordLimit($string, $config = [], $alternateConfig = [])
 	{
-		$characters       = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
-		$charactersLength = strlen($characters);
-		$string           = "";
+		if (is_integer($config))
+			$alternateConfig['wordLimit'] = true;
+		else
+			$config['wordLimit'] = true;
 
-		for ($i = 0; $i < $length; $i++) {
-			$string .= $characters[rand(0, $charactersLength - 1)];
+		return $this->stringLimit($string, $config, $alternateConfig);
+	}
+
+	/**
+	 * Limit a string.
+	 *
+	 * @param  string  $string
+	 * @param  mixed   $config
+	 * @param  array   $alternateConfig
+	 * @return string
+	 */
+	public function stringLimit($string, $config = [], $alternateConfig = [])
+	{
+		if (is_integer($config))
+		{
+			$limitConfig = $config;
+			$config      = $alternateConfig;
+
+			if ((!isset($config['wordLimit']) || !$config['wordLimit']) && (!isset($config['charLimit']) || !$config['charLimit']))
+				$config['wordLimit'] = true;
+			else
+				$config['wordLimit'] = false;
+
+			if ($config['wordLimit'])
+				$config['words'] = $limitConfig;
+			else
+				$config['chars'] = $limitConfig;
+		}
+		else
+		{
+			if ((!isset($config['wordLimit']) || !$config['wordLimit']) && (!isset($config['charLimit']) || !$config['charLimit']))
+				$config['wordLimit'] = true;
+			else
+				$config['wordLimit'] = false;
 		}
 
-		return $string;
+		$config = array_merge($this->camelizeKeys(config('format.defaults.string_limit')), $config);
+
+		if ($config['trim'])
+			$string = trim($string);
+
+		$stripTags = true;
+
+		if ($config['html'])
+		{
+			$regExp = '/\<[A-Za-z0-9\-\_\.\,\=\#\"\'\:\/\!\?\>\<\@\#\$\%\^\&\*\(\)\[\]\ ]*\/[A-Za-z]*\>/';
+
+			if ($config['wordLimit'])
+			{
+				$wordsReal       = explode(' ', $string);
+				$exceededHtmlMax = count($wordsReal) > $config['maxWordsHtml'];
+
+				if (!$exceededHtmlMax)
+				{
+					$stripTags = false;
+
+					$spaceReplacer = "[[]]";
+
+					// replace spaces in tags to make them behave as a single word for the word count
+					preg_match_all($regExp, $string, $tags);
+
+					if (isset($tags[0]) && !empty($tags[0]))
+					{
+						for ($t = 0; $t < count($tags[0]); $t++)
+						{
+							$string = str_replace($tags[0][$t], str_replace(' ', $spaceReplacer, $tags[0][$t]), $string);
+						}
+					}
+				}
+			}
+			else
+			{
+				$charactersReal  = strlen($string);
+				$exceededHtmlMax = count($charactersReal) > $config['maxCharsHtml'];
+
+				if (!$exceededHtmlMax)
+				{
+					$stripTags = false;
+
+					$tagsArray = [];
+
+					// replace tags with placeholders
+					preg_match_all($regExp, $string, $tags);
+
+					if (isset($tags[0]) && !empty($tags[0]))
+					{
+						for ($t = 0; $t < count($tags[0]); $t++)
+						{
+							$tagsArray[] = $tags[0][$t];
+
+							$string = str_replace($tags[0][$t], '[[T'.sprintf('%03d', count($tagsArray)).']]', $string);
+						}
+					}
+				}
+			}
+		}
+
+		if ($stripTags)
+			$string = strip_tags($string);
+
+		$formattedString = "";
+
+		if ($config['wordLimit'])
+		{
+			$wordsAdded = 0;
+
+			$words = explode(' ', $string);
+
+			foreach ($words as $word)
+			{
+				if ($wordsAdded < $config['words'])
+				{
+					if ($formattedString != "")
+						$formattedString .= " ";
+
+					$formattedString .= $word;
+
+					$wordsAdded ++;
+				}
+			}
+
+			if ($config['html'] && !$exceededHtmlMax)
+				$formattedString = str_replace($spaceReplacer, ' ', $formattedString);
+
+			$exceededLimit = count($words) > $config['words'];
+		}
+		else
+		{
+			$charsAdded = 0;
+
+			$exceededLimit = false;
+
+			$s = $string;
+			for ($c = 0; $c < strlen($s); $c++)
+			{
+				if (!$exceededLimit)
+				{
+					$tagPlaceholderStart = isset($s[$c]) && $s[$c] == "[" && isset($s[$c+7]);
+
+					if (isset($s[$c]) && ($charsAdded < $config['chars'] || $tagPlaceholderStart))
+					{
+						$char = $s[$c];
+
+						if ($tagPlaceholderStart)
+						{
+							$n = $s[$c+3] . $s[$c+4] . $s[$c+5];
+
+							if ($s[$c+1] == "[" && $s[$c+2] == "T" && is_numeric($n) && $s[$c+6] == "]" && $s[$c+7] == "]")
+							{
+								//$placeholder = $n."]]";
+
+								//$s = str_replace($placeholder, '', $s);
+
+								$n   = (int) $n;
+								$tag = $tagsArray[$n-1];
+
+								$charsInTag = strlen(strip_tags($tag));
+
+								if (strlen($formattedString) + $charsInTag <= $config['chars'])
+								{
+									$formattedString .= $tag;
+
+									$charsAdded += $charsInTag;
+								}
+								else
+								{
+									$exceededLimit = true;
+								}
+
+								$c += 7;
+							}
+						}
+						else
+						{
+							$formattedString .= $char;
+
+							$charsAdded ++;
+						}
+					}
+					else
+					{
+						if (isset($s[$c]) && $charsAdded >= $config['chars'])
+							$exceededLimit = true;
+					}
+				}
+			}
+		}
+
+		if ($exceededLimit && !is_null($config['exceededText']) && $config['exceededText'] !== false)
+		{
+			$formattedString = trim($formattedString);
+
+			$exceededText = $config['exceededText'];
+
+			if (!is_null($config['exceededLinkUrl']) && $config['exceededLinkUrl'] !== false)
+			{
+				$exceededLinkClass = "";
+				if ($config['exceededLinkClass'] != "" && !is_null($config['exceededLinkClass']) && $config['exceededLinkClass'] !== false)
+				{
+					$exceededLinkClass = ' class="'.$config['exceededLinkClass'].'"';
+				}
+
+				$exceededText = '<a href="'.$config['exceededLinkUrl'].'"'.$exceededLinkClass.'>'.$exceededText.'</a>';
+			}
+			else
+			{
+				$exceededText = '<span class="exceeded-limit">'.$exceededText.'</span>';
+			}
+
+			$formattedString .= $exceededText;
+		}
+
+		//$formattedString .= count($words).' / '.$config['words'];
+
+		return $formattedString;
 	}
 
 	/**
