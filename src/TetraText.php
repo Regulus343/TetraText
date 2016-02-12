@@ -47,8 +47,8 @@ class TetraText {
 	}
 
 	/**
-	 * Format a money value. This is superior to PHP's number_format() because it will but
-	 * the dollar symbol to the right of the minus for a negative value ("-$33.00").
+	 * Format a money value. This is superior to PHP's number_format() for monetary values because
+	 * it will put the dollar symbol to the right of the minus for a negative value ("-$343.00").
 	 *
 	 * @param  float   $value
 	 * @param  string  $prefix
@@ -63,19 +63,27 @@ class TetraText {
 
 		if ($value != "")
 		{
-			if (substr($value, 0, 1) == '-') {
-				if ($allowNegative) {
+			if (substr($value, 0, 1) == '-')
+			{
+				if ($allowNegative)
+				{
 					if ($allowNegative === "brackets")
 						$formatted = '('.$prefix.number_format(abs($value), 2, '.', $thousandsSeparator).')';
 					else
 						$formatted = '-'.$prefix.number_format(abs($value), 2, '.', $thousandsSeparator);
-				} else {
+				}
+				else
+				{
 					$formatted = $prefix.'0.00';
 				}
-			} else {
+			}
+			else
+			{
 				$formatted = $prefix.number_format($value, 2, '.', $thousandsSeparator);
 			}
-		} else {
+		}
+		else
+		{
 			$formatted = $prefix.'0.00';
 		}
 
@@ -261,7 +269,7 @@ class TetraText {
 	 * @param  mixed   $subject
 	 * @return mixed
 	 */
-	public function email($email = null, $subject = null)
+	public function emailLink($email = null, $subject = null)
 	{
 		if (is_null($email) || $email == "" || !strpos($email, '@') || !strpos($email, '.'))
 			return null;
@@ -279,12 +287,12 @@ class TetraText {
 	 * Add a letter suffix to an integer ("1st", "2nd", "3rd", "4th").
 	 *
 	 * @param  integer $number
-	 * @param  boolean $superscriptTag
+	 * @param  mixed   $tag
 	 * @return string
 	 */
-	public function numberSuffix($number = 1, $superscriptTag = true)
+	public function numberSuffix($number = 1, $tag = 'sup', $tagClass = 'number-suffix')
 	{
-		$number = $this->numeric($number, false);
+		$number = (int) $this->numeric($number, false);
 
 		$suffix = "th";
 
@@ -297,8 +305,12 @@ class TetraText {
 		if ((int) substr($number, -1) == 3 && $number != 13)
 			$suffix = "rd";
 
-		if ($superscriptTag)
-			$suffix = '<sup>'.$suffix.'</sup>';
+		if (!is_null($tag) && $tag !== false)
+		{
+			$class = !is_null($tagClass) && $tagClass !== false ? ' class="'.$tagClass.'"' : "";
+
+			$suffix = '<'.$tag.''.$class.'>'.$suffix.'</'.$tag.'>';
+		}
 
 		return $number.$suffix;
 	}
@@ -603,10 +615,10 @@ class TetraText {
 	 *
 	 * @param  string  $singular
 	 * @param  integer $number
-	 * @param  string  $plural
+	 * @param  mixed   $plural
 	 * @return string
 	 */
-	public function pluralize($singular = 'result', $number = 1, $plural = false)
+	public function pluralize($singular = 'item', $number = 1, $plural = null)
 	{
 		if ($number == 1)
 		{
@@ -625,13 +637,14 @@ class TetraText {
 	 * @param  string  $message
 	 * @param  string  $singular
 	 * @param  integer $number
-	 * @param  string  $plural
+	 * @param  mixed   $plural
 	 * @return string
 	 */
-	public function pluralizeMessage($message, $singular = 'result', $number = 1, $plural = false)
+	public function pluralizeMessage($message, $singular = 'item', $number = 1, $plural = null)
 	{
-		$item    = $this->pluralize($singular, $number, $plural);
-		$message = str_replace(':number', $number, str_replace(':item', $item, $message));
+		$item = $this->pluralize($singular, $number, $plural);
+
+		return str_replace(':number', $number, str_replace(':item', $item, $message));
 	}
 
 	/**
@@ -646,12 +659,12 @@ class TetraText {
 		$prefix        = 'a';
 
 		// use "an" if item begins with a vowel
-		if (in_array(substr($itemFormatted, 0, 1), array('a', 'e', 'i', 'o', 'u')))
+		if (in_array(substr($itemFormatted, 0, 1), ['a', 'e', 'i', 'o', 'u']))
 			$prefix .= 'n';
 
 		// use "an" if item is an acronym and starts with a letter that has a vowel sound
-		if (substr($item, 0, 2) == substr(strtoupper($item), 0, 2)
-		&& in_array(substr($itemFormatted, 0, 1), array('a', 'e', 'f', 'h', 'i', 'l', 'm', 'n', 'o', 'r', 's', 'x')))
+		$letters = ['a', 'e', 'f', 'h', 'i', 'l', 'm', 'n', 'o', 'r', 's', 'x'];
+		if (substr($item, 0, 2) == substr(strtoupper($item), 0, 2) && in_array(substr($itemFormatted, 0, 1), $letters))
 			$prefix .= 'n';
 
 		return $prefix.' '.$item;
@@ -660,14 +673,14 @@ class TetraText {
 	/**
 	 * Convert HTML characters to entities.
 	 *
-	 * The encoding specified in the application configuration file will be used.
+	 * The encoding specified in the application config file will be used.
 	 *
-	 * @param  string  $value
+	 * @param  string  $string
 	 * @return string
 	 */
-	public function entities($value)
+	public function entities($string)
 	{
-		return htmlentities($value, ENT_QUOTES, config('format.encoding'), false);
+		return htmlentities($string, ENT_QUOTES, config('format.encoding'), false);
 	}
 
 	/**
@@ -935,12 +948,12 @@ class TetraText {
 	 */
 	public function firstDayOfMonth($date = null, $format = false)
 	{
-		$date = is_null($date) ? date('Y-m-d') : date('Y-m-d', strtotime($date));
+		$date = is_null($date) ? date('Y-m-01') : date('Y-m-01', strtotime($date));
 
 		if ($format)
-			$result = $this->date($result, $format);
+			$date = $this->date($date, $format);
 
-		return $result;
+		return $date;
 	}
 
 	/**
@@ -1167,17 +1180,32 @@ class TetraText {
 	 */
 	public function nl2p($string)
 	{
-		return str_replace('<p></p>', '', str_replace("\r\n", '</p><p>', str_replace("\r\n\r\n", '</p><p>', trim($string))));
+		$string = trim($string);
+
+		$paragraphCloseOpen = "</p><p>";
+		$replacementStrings = [
+			"\r\n\r\n",
+			"\n\n",
+			"\r\n",
+			"\n",
+		];
+
+		foreach ($replacementStrings as $replacementString)
+		{
+			$string = str_replace($replacementString, $paragraphCloseOpen, $string);
+		}
+
+		return str_replace('<p></p>', '', $string);
 	}
 
 	/**
-	 * Separate a string into paragraphs.
+	 * Separate a string with new line characters into paragraphs.
 	 *
 	 * @param  string  $string
-	 * @param  integer $charLimit
+	 * @param  mixed   $charLimit
 	 * @return string
 	 */
-	public function paragraphs($string, $charLimit = 0)
+	public function paragraphs($string, $charLimit = null)
 	{
 		if ($charLimit)
 			$string = $this->charLimit($string, $charLimit);
@@ -1238,7 +1266,8 @@ class TetraText {
 
 			if ((!isset($config['wordLimit']) || !$config['wordLimit']) && (!isset($config['charLimit']) || !$config['charLimit']))
 				$config['wordLimit'] = true;
-			else
+
+			if (!isset($config['wordLimit']))
 				$config['wordLimit'] = false;
 
 			if ($config['wordLimit'])
@@ -1263,7 +1292,7 @@ class TetraText {
 
 		if ($config['html'])
 		{
-			$regExp = '/\<[A-Za-z0-9\-\_\.\,\=\#\"\'\:\/\!\?\>\<\@\#\$\%\^\&\*\(\)\[\]\ ]*\/[A-Za-z]*\>/';
+			$regExp = '/<([\w]+)[^>]*\>(.*?)<\/\1>|<([\w]+)[^>]*\/\>/';
 
 			if ($config['wordLimit'])
 			{
@@ -1355,22 +1384,18 @@ class TetraText {
 			{
 				if (!$exceededLimit)
 				{
-					$tagPlaceholderStart = isset($s[$c]) && $s[$c] == "[" && isset($s[$c+7]);
+					$possibleTagPlaceholderStart = isset($s[$c]) && $s[$c] == "[" && isset($s[$c+7]);
 
-					if (isset($s[$c]) && ($charsAdded < $config['chars'] || $tagPlaceholderStart))
+					if (isset($s[$c]) && ($charsAdded < $config['chars'] || $possibleTagPlaceholderStart))
 					{
 						$char = $s[$c];
 
-						if ($tagPlaceholderStart)
+						if ($possibleTagPlaceholderStart)
 						{
 							$n = $s[$c+3] . $s[$c+4] . $s[$c+5];
 
 							if ($s[$c+1] == "[" && $s[$c+2] == "T" && is_numeric($n) && $s[$c+6] == "]" && $s[$c+7] == "]")
 							{
-								//$placeholder = $n."]]";
-
-								//$s = str_replace($placeholder, '', $s);
-
 								$n   = (int) $n;
 								$tag = $tagsArray[$n-1];
 
@@ -1429,8 +1454,6 @@ class TetraText {
 
 			$formattedString .= $exceededText;
 		}
-
-		//$formattedString .= count($words).' / '.$config['words'];
 
 		return $formattedString;
 	}

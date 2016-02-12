@@ -13,7 +13,7 @@ return [
 			'digits'              => 10,
 			'separator'           => '-',
 			'area_code_brackets'  => true,
-			'extension_separator' => ' x ',
+			'extension_separator' => ' x',
 			'strip_extension'     => false,
 		],
 

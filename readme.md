@@ -3,8 +3,6 @@ TetraText
 
 **A small text/string formatting composer package for Laravel 5 that formats numeric values, money values, phone numbers, and more. There are also some limited date functions available.**
 
-> **Note:** For Laravel 4, you may use <a href="https://github.com/Regulus343/TetraText/tree/v0.4.4">version 0.4.4</a>.
-
 - [Installation](#installation)
 - [Available Functions](#available-functions)
 
@@ -14,7 +12,7 @@ TetraText
 To install TetraText, make sure "regulus/tetra-text" has been added to Laravel 5's `composer.json` file.
 
 	"require": {
-		"regulus/tetra-text": "0.5.*"
+		"regulus/tetra-text": "0.6.*"
 	},
 
 Then run `php composer.phar update` from the command line. Composer will install the TetraText package. Now, all you have to do is register the service provider and set up TetraText's alias in `config/app.php`. Add this to the `providers` array:
@@ -32,212 +30,256 @@ You may use 'TetraText', or another alias, but 'Format' is recommended for the s
 
 **Format a string as a number:**
 
-	//note: numeric() is an alias for Format::numeric()
+```php
+// note: numeric() is an alias for Format::numeric()
 
-	//format a string as numeric
-	echo numeric($value);
+// format a string as numeric
+echo numeric($value);
 
-	//disallow decimals
-	echo numeric($value, false);
+// disallow decimals
+echo numeric($value, false);
 
-	//allow negative numbers
-	echo numeric($value, true, true);
+// allow negative numbers
+echo numeric($value, true, true);
+```
 
 **Format a string into a dollar value:**
 
-	//note: money() is an alias for Format::money()
+```php
+// note: money() is an alias for Format::money()
 
-	//format a string as money
-	echo money(100);
+// format a string as money
+echo money(343);
 
-	//use euro symbol instead of dollar symbol
-	echo money(100, '€');
+// use euro symbol instead of dollar symbol
+echo money(343, '€');
 
-	//disallow negative numbers
-	echo money(100, '$', false);
+// disallow negative values (will output "$0.00")
+echo money(-343, '$', false);
 
-	//remove thousands separator
-	echo money(100, '$', true, '');
+// remove thousands separator
+echo money(343, '$', true, '');
+```
 
 The advantage of the `money()` function over PHP's `number_format()` is that negative dollar values will come out as `-$343.00` instead of `$-343.00` like they would if you simply concatenated a dollar sign to a string formatted with `number_format()`.
 
-**Turn a value into a percent of a specified total:**
+**Turn a value into a percent of a specified total (and avoid "division by zero" error):**
 
-	//note: percent() is an alias for Format::percent()
+```php
+// note: percent() is an alias for Format::percent()
 
-	//will output "25%"
-	echo percent(25, 100);
+// will output "25%"
+echo percent(25, 100);
 
-	//use zero decimal places (default is 1)
-	echo percent(25, 100, 0);
+// will output "0%"
+echo percent(25, 0);
 
-	//will return as a number rather than a string with the "%" symbol concatenated to the end
-	echo percent(25, 100, 0, true);
+// use zero decimal places (default is 1)
+echo percent(25, 100, 0);
 
-The advantage of using the `percent()` function is that it will automatically avoid the "division by zero" error and return `0%`.
+// return as a number rather than a string with the "%" symbol concatenated to the end
+echo percent(25, 100, 0, true);
+```
 
 **Format a North American phone number:**
 
-	//note: phone() is an alias for Format::phone()
+```php
+// note: phone() is an alias for Format::phone()
 
-	//will output "(403) 343-5555"
-	echo phone(14033435555);
+// will output "(403) 343-1123"
+echo phone(14033431123);
 
-	//will output "1 (403) 343-5555"
-	echo phone(14033435555, 11);
+// will output "1 (403) 343-1123"
+echo phone(14033431123, ['digits' => 11]);
 
-	//will output "(403) 343.5555"
-	echo phone('1-403-343-5555', 10, '.');
+// will output "(403) 343.1123"
+echo phone('1-403-343-1123', ['separator' => '.']);
 
-	//will output "403.343.5555"
-	echo phone('1-403-343-5555', 10, '.', false);
+// will output "403.343.1123"
+echo phone('1-403-343-1123', ['separator' => '.', 'areaCodeBrackets' => false]);
 
-You may pass the `phone()` function a string or an integer. It will automatically strip out non-numeric characters before formatting into a phone number.
+// will output "(403) 343-1123 x343"
+echo phone('1-403-343-1123 Ext. 343');
+
+// will output "(403) 343-1123 Ext. 343"
+echo phone('1-403-343-1123 x343', ['extensionSeparator' => ' Ext. ']);
+
+// will output "(403) 343-1123"
+echo phone('1-403-343-1123 Ext. 343', ['stripExtension' => true]);
+```
+
+You may pass the `phone()` function a string or an integer. It will automatically strip out non-numeric characters before formatting the variable into a phone number.
 
 **Format a Canadian postal code:**
 
-	//note: postal_code() is an alias for Format::postalCode()
+```php
+// note: postal_code() is an alias for Format::postalCode()
 
-	//will output "S0N 0H0"
-	echo postal_code('s0n0h0');
+// will output "S0N 0H0"
+echo postal_code('s0n0h0');
 
-	//will output "S0N0H0"
-	echo postal_code('s0n0h0', false);
+// will output "S0N0H0"
+echo postal_code('s0n0h0', false);
+```
 
 **Format a boolean as a string:**
 
-	//note: bool_to_str() is an alias for Format::boolToStr()
+```php
+// note: bool_to_str() is an alias for Format::boolToStr()
 
-	//will output "Yes"
-	echo bool_to_str(true);
+// will output "Yes"
+echo bool_to_str(true);
 
-	//will output "No"
-	echo bool_to_str(false);
+// will output "No"
+echo bool_to_str(false);
 
-	//will output "Off"
-	echo bool_to_str(false, 'On/Off');
+// will output "Off"
+echo bool_to_str(false, 'On/Off');
 
-	//will output "Up"
-	echo bool_to_str(true, array('Up', 'Down'));
+// will output "Up"
+echo bool_to_str(true, ['Up', 'Down']);
+```
 
-**Format an array of items as a string:**
+**Add a suffix to a number:**
 
-	//will output "Tiger, Rhino, Dinosaur"
-	echo Format::listToStr(array('Tiger', 'Rhino', 'Dinosaur'));
+```php
+// will output '1<sup class="number-suffix">st</sup>'
+echo Format::numberSuffix(1);
 
-	//will output "Tiger<br />Rhino<br />Dinosaur"
-	echo Format::listToStr(array('Tiger', 'Rhino', 'Dinosaur'), '<br />');
+// will output "2nd"
+echo Format::numberSuffix(2, false);
 
-	//will output "Tiger, Dinosaur"
-	echo Format::listToStr(array('Tiger' => true, 'Rhino' => false, 'Dinosaur' => true));
-
-**Format a collection of objects as a string list of items using a specific attribute or mutator from the object:**
-
-	$users = User::orderBy('id')->get();
-
-	may output "Joe, Sue, Jim"
-	echo Format::objListToStr($items, 'first_name');
-
-	may output "Joe Smith, Sue Johnson, Jim Tucker" (assuming the User model has a getName() method)
-	echo Format::objListToStr($items, 'getName()');
+// will output "3<span>rd</span>"
+echo Format::numberSuffix(3, 'span', false);
+```
 
 **Pluralize an item name based on a specified number:**
 
-	//will output "item"
-	echo Format::pluralize('item', 1);
+```php
+// will output "item"
+echo Format::pluralize('item', 1);
 
-	//will output "items"
-	echo Format::pluralize('item', 2);
+// will output "items"
+echo Format::pluralize('item', 2);
 
-	//will output "pagez"
-	echo Format::pluralize('page', 2, 'pagez');
+// will output "fungi"
+echo Format::pluralize('fungus', 2, 'fungi');
+```
 
 **Pluralize a string based on a specified number:**
 
-	$users = User::all();
-	$message = "Displaying :number :item.";
+```php
+$users   = User::all();
+$message = "Displaying :number :item.";
 
-	//may output "Displaying 3 users."
-	echo Format::pluralizeMessage($message, 'user', count($users));
+// may output "Displaying 3 users."
+echo Format::pluralizeMessage($message, 'user', count($users));
+```
 
 **Get the correct English word prefix for an item name ("a" or "an", based on the sound of the starting syllable):**
 
-	//will output "a"
-	echo Format::a('frog');
+```php
+// will output "a frog"
+echo Format::a('frog');
 
-	//will output "an"
-	echo Format::a('octopus');
+// will output "an octopus"
+echo Format::a('octopus');
 
-	//will output "an" (method checks the first two letters for capitals to denote acronym and then uses letter sound)
-	echo Format::a('HTML');
+// will output "an HTML" (method checks the first two letters for capitals to denote acronym and then uses letter sound)
+echo Format::a('HTML');
+```
 
 **Convert a string to HTML characters:**
 
-	//will output "PHP &amp; Laravel 4"
-	echo Format::entities('PHP & Laravel 4');
+```php
+// will output "Penn &amp; Teller"
+echo entities('Penn & Teller');
+```
 
 **Convert a string to a URI slug:**
 
-	//will output "turn-this-title-into-a-slug"
-	echo Format::slug('Turn This Title Into a Slug!');
+```php
+// will output "turn-this-title-into-a-slug"
+echo Format::slug('Turn This Title Into a Slug!');
+```
 
 **Convert a string to a unique URI slug based on the specified table and field name:**
 
-	//may output "turn-this-title-into-a-slug-2" if "blog_posts" table already has a row with slug
-	echo Format::uniqueSlug('Turn This Title Into a Slug!', 'blog_posts');
+```php
+// may output "turn-this-title-into-a-slug-2" if "blog_posts" table already has a row with slug
+echo Format::uniqueSlug('Turn This Title Into a Slug!', 'blog_posts');
 
-	//set an ID to ignore/prevent slug conflicts for (ID of table row being edited)
-	echo Format::uniqueSlug('Turn This Title Into a Slug!', 'blog_posts', 3);
+// set an ID to ignore/prevent slug conflicts for (ID of table row being edited)
+echo Format::uniqueSlug('Turn This Title Into a Slug!', 'blog_posts', ['ignoreId' => 343]);
 
-	//set a character limit for the slug
-	echo Format::uniqueSlug('Turn This Title Into a Slug!', 'blog_posts', 3, 52);
+// set a character limit for the slug
+echo Format::uniqueSlug('Turn This Title Into a Slug!', 'blog_posts', ['charLimit' => 64]);
 
-	//use a different field than "slug" in DB table
-	echo Format::uniqueSlug('Turn This Title Into a Slug!', 'blog_posts', 3, false, 'uri_tag');
+// use a different field than "slug" in DB table
+echo Format::uniqueSlug('Turn This Title Into a Slug!', 'blog_posts', ['field' => 'uri_tag']);
+
+// ignore soft deleted records
+echo Format::uniqueSlug('Turn This Title Into a Slug!', 'blog_posts', ['softDelete' => true]);
+
+// add additional matching values
+echo Format::uniqueSlug('Turn This Title Into a Slug!', 'blog_posts', ['matchingValues' => ['type' => 'Microblog']]);
+echo Format::uniqueSlug('Turn This Title Into a Slug!', 'blog_posts', ['matchingValues' => ['type' => '>= 3']]);
+```
 
 **Get the first day of a week:**
 
-	//will output "2013-09-22" (using "Sunday" as the first day)
-	echo Format::firstDayOfWeek('2013-09-27');
+```php
+// will output "2013-09-22" (using "Sunday" as the first day)
+echo Format::firstDayOfWeek('2013-09-27');
 
-	//will output "2013-09-23"
-	echo Format::firstDayOfWeek('2013-09-27', 'Monday');
+// will output "2013-09-23"
+echo Format::firstDayOfWeek('2013-09-27', 'Monday');
+```
 
 **Get the last day of a week:**
 
-	//will output "2013-09-28" (using "Sunday" as the first day)
-	echo Format::lastDayOfWeek('2013-09-27');
+```php
+// will output "2013-09-28" (using "Sunday" as the first day)
+echo Format::lastDayOfWeek('2013-09-27');
 
-	//will output "2013-09-29"
-	echo Format::lastDayOfWeek('2013-09-27', 'Monday');
+// will output "2013-09-29"
+echo Format::lastDayOfWeek('2013-09-27', 'Monday');
+```
 
 **Get the first day of a month:**
 
-	//will output "2013-09-01"
-	echo Format::firstDayOfMonth('2013-09-27');
+```php
+// will output "September 1"
+echo Format::firstDayOfMonth('2013-09-27', 'F j');
+```
 
 **Get the last day of a month:**
 
-	//will output "2013-09-30"
-	echo Format::lastDayOfMonth('2013-09-27');
+```php
+// will output "2013-09-30"
+echo Format::lastDayOfMonth('2013-09-27');
+```
 
 **Convert new lines to paragraphs:**
 
-	//will output "<p>This is the first paragraph.</p><p>This is the second paragraph.</p>"
-	echo Format::paragraphs("This is the first paragraph.\nThis is the second paragraph.");
+```php
+// will output "<p>This is the first paragraph.</p><p>This is the second paragraph.</p>"
+echo Format::paragraphs("This is the first paragraph.\nThis is the second paragraph.");
+```
 
 **Apply a character limit to a string:**
 
-	$string = "This is a not-very-long string, but long enough to test charLimit().";
+```php
+$string = 'I define <strong>anarchist society</strong> as one where there is no legal possibility for coercive aggression against the person or property of any individual. Anarchists oppose the State because it has its very being in such aggression, namely, the expropriation of private property through taxation, the coercive exclusion of other providers of defense service from its territory, and all of the other depredations and coercions that are built upon these twin foci of invasions of individual rights. <div class="author">-Murray Rothbard</div>';
 
-	//will output "This is a not-very-long stri..."
-	echo Format::charLimit($string, 24);
+// will output 'I define <strong>anarchist society</strong> as one where there is no legal possibility for coercive aggression<span class="exceeded-limit">...</span>'
+echo Format::charLimit($string, 93);
 
-	//will output "This is a not-very-long stri"
-	echo Format::charLimit($string, 24, false);
+// will output 'I define <strong>anarchist society</strong> as one where there is no legal possibility for coercive aggression'
+echo Format::charLimit($string, 93, ['exceededText' => false]);
 
-	//will output 'This is a not-very-long stri<a href="http://website.com/articles/test-article" class="read-more">read more</a>'
-	echo Format::charLimit($string, 24, 'read more', 'http://website.com/articles/test-article');
+// will output 'I define <strong>anarchist society</strong> as one where there is no legal possibility for coercive aggression<a href="https://en.wikiquote.org/wiki/Murray_Rothbard" class="read-more">Read more...</a>'
+echo Format::wordLimit($string, 14, ['exceededText' => 'Read more...', 'exceededLinkUrl' => 'https://en.wikiquote.org/wiki/Murray_Rothbard']);
+```
 
-	//may output 'This is a not-very-long stri<a href="http://website.com/articles/test-article" class="read-more">read more</a>'
-	echo Format::charLimit($string, 24, 'read more', 'article/test-article');
+> **Note:** `charLimit()` and `wordLimit()` were designed to maintain HTML tag integrity.

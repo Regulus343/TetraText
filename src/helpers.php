@@ -1,8 +1,6 @@
 <?php
 
-use Regulus\TetraText\Facade as Format;
-
-if ( ! function_exists('numeric'))
+if (!function_exists('numeric'))
 {
 	/**
 	 * Remove all non-numeric characters from a string.
@@ -14,15 +12,15 @@ if ( ! function_exists('numeric'))
 	 */
 	function numeric($value, $allowDecimal = true, $allowNegative = false)
 	{
-		return Format::numeric($value, $allowDecimal, $allowNegative);
+		return \Regulus\TetraText\Facade::numeric($value, $allowDecimal, $allowNegative);
 	}
 }
 
-if ( ! function_exists('money'))
+if (!function_exists('money'))
 {
 	/**
-	 * Format a money value. This is superior to PHP's number_format() because it will but
-	 * the dollar symbol to the right of the minus for a negative value ("-$33.00").
+	 * Format a money value. This is superior to PHP's number_format() for monetary values because
+	 * it will put the dollar symbol to the right of the minus for a negative value ("-$343.00").
 	 *
 	 * @param  float   $value
 	 * @param  string  $prefix
@@ -32,11 +30,11 @@ if ( ! function_exists('money'))
 	 */
 	function money($value, $prefix = '$', $allowNegative = true, $thousandsSeparator = ',')
 	{
-		return Format::money($value, $prefix, $allowNegative, $thousandsSeparator);
+		return \Regulus\TetraText\Facade::money($value, $prefix, $allowNegative, $thousandsSeparator);
 	}
 }
 
-if ( ! function_exists('percent'))
+if (!function_exists('percent'))
 {
 	/**
 	 * Calculate the percentage of a value to a total. Avoids division by zero error.
@@ -49,28 +47,26 @@ if ( ! function_exists('percent'))
 	 */
 	function percent($value = 0, $total = 0, $decimals = 1, $returnNumeric = false)
 	{
-		return Format::percent($value, $total, $decimals, $returnNumeric);
+		return \Regulus\TetraText\Facade::percent($value, $total, $decimals, $returnNumeric);
 	}
 }
 
-if ( ! function_exists('phone'))
+if (!function_exists('phone'))
 {
 	/**
 	 * Format a Canadian/American phone number.
 	 *
-	 * @param  string  $phoneNumber
-	 * @param  integer $digits
-	 * @param  string  $separator
-	 * @param  boolean $areaCodeBrackets
+	 * @param  string  $number
+	 * @param  array   $config
 	 * @return string
 	 */
-	function phone($phoneNumber, $digits = null, $separator = null, $areaCodeBrackets = null)
+	function phone($number, $config = [])
 	{
-		return Format::phone($phoneNumber, $digits, $separator, $areaCodeBrackets);
+		return \Regulus\TetraText\Facade::phone($number, $config);
 	}
 }
 
-if ( ! function_exists('postal_code'))
+if (!function_exists('postal_code'))
 {
 	/**
 	 * Format a Canadian postal code.
@@ -81,11 +77,11 @@ if ( ! function_exists('postal_code'))
 	 */
 	function postal_code($postalCode, $separateWithSpace = true)
 	{
-		return Format::postalCode($postalCode, $separateWithSpace);
+		return \Regulus\TetraText\Facade::postalCode($postalCode, $separateWithSpace);
 	}
 }
 
-if ( ! function_exists('bool_to_str'))
+if (!function_exists('bool_to_str'))
 {
 	/**
 	 * Turn a boolean value into a string. Some examples of types are "Yes/No", "Yes", "On/Off", and "Active/Inactive".
@@ -96,11 +92,70 @@ if ( ! function_exists('bool_to_str'))
 	 */
 	function bool_to_str($value, $options = null)
 	{
-		return Format::boolToStr($value, $options);
+		return \Regulus\TetraText\Facade::boolToStr($value, $options);
 	}
 }
 
-if ( ! function_exists('nl2p'))
+if (!function_exists('get_selected_from_array'))
+{
+	/**
+	 * Get only items (keys) from an array if their values are set to true. If a simple array is used, the function will simply remove duplicate values.
+	 *
+	 * @param  array   $array
+	 * @return array
+	 */
+	function get_selected_from_array($array)
+	{
+		return \Regulus\TetraText\Facade::getSelectedFromArray($array);
+	}
+}
+
+if (!function_exists('camelize_keys'))
+{
+	/**
+	 * Make the keys of an array or object camel case.
+	 *
+	 * @param  array   $array
+	 * @return array
+	 */
+	function camelize_keys($array)
+	{
+		return \Regulus\TetraText\Facade::camelizeKeys($array);
+	}
+}
+
+if (!function_exists('entities'))
+{
+	/**
+	 * Convert HTML characters to entities.
+	 *
+	 * The encoding specified in the config file will be used.
+	 *
+	 * @param  string  $string
+	 * @return string
+	 */
+	function entities($string)
+	{
+		return \Regulus\TetraText\Facade::entities($string);
+	}
+}
+
+if (!function_exists('slug'))
+{
+	/**
+	 * Create a URI slug from a string.
+	 *
+	 * @param  string  $string
+	 * @param  mixed   $charLimit
+	 * @return string
+	 */
+	function slug($string, $charLimit = false)
+	{
+		return \Regulus\TetraText\Facade::slug($string, $charLimit);
+	}
+}
+
+if (!function_exists('nl2p'))
 {
 	/**
 	 * Separate a string with new line characters into paragraphs.
@@ -110,6 +165,53 @@ if ( ! function_exists('nl2p'))
 	 */
 	function nl2p($string)
 	{
-		return Format::nl2p($string);
+		return \Regulus\TetraText\Facade::nl2p($string);
+	}
+}
+
+if (!function_exists('paragraphs'))
+{
+	/**
+	 * Separate a string with new line characters into paragraphs.
+	 *
+	 * @param  string  $string
+	 * @param  mixed   $charLimit
+	 * @return string
+	 */
+	function paragraphs($string, $charLimit = null)
+	{
+		return \Regulus\TetraText\Facade::paragraphs($string, $charLimit);
+	}
+}
+
+if (!function_exists('char_limit'))
+{
+	/**
+	 * Limit a string to a number of characters.
+	 *
+	 * @param  string  $string
+	 * @param  mixed   $config
+	 * @param  array   $alternateConfig
+	 * @return string
+	 */
+	function char_limit($string, $config = [], $alternateConfig = [])
+	{
+		return \Regulus\TetraText\Facade::charLimit($string, $config, $alternateConfig);
+	}
+}
+
+if (!function_exists('word_limit'))
+{
+	/**
+	 * Limit a string to a number of words.
+	 *
+	 * @param  string  $string
+	 * @param  mixed   $config
+	 * @param  array   $alternateConfig
+	 * @return string
+	 */
+	function word_limit($string, $config = [], $alternateConfig = [])
+	{
+		return \Regulus\TetraText\Facade::wordLimit($string, $config, $alternateConfig);
 	}
 }
