@@ -293,14 +293,14 @@ echo word_limit($string, 14, ['exceededText' => 'Read more...', 'exceededLinkUrl
 echo trans_l($value);
 
 // get a translation choice and make it lowercase (if it does not appear to be an acronym)
-echo trans_choice_l($value, 1); //would output "item" from translation variable of "Item|Items"
+echo trans_choice_l($value, 1); // will output "item" from translation variable of "Item|Items"
 
 // get a translation and prepend with "a" or "an" if language is English or exceeds 2 letter language code
-echo trans_a($value); //would output "an umbrella" from translation variable of "umbrella"
+echo trans_a($value); // will output "an umbrella" from translation variable of "umbrella"
 
 // get a translation and prepend with "a" or "an" if language is English or exceeds 2 letter language code
-echo trans_choice_a($value, 1); //would output "an umbrella" from translation variable of "umbrella|umbrellas"
-echo trans_choice_a($value, 2); //would output "2 umbrellas" from translation variable of "umbrella|umbrellas"
+echo trans_choice_a($value, 1); // will output "an umbrella" from translation variable of "umbrella|umbrellas"
+echo trans_choice_a($value, 2); // will output "2 umbrellas" from translation variable of "umbrella|umbrellas"
 
 // note: trans_l(), trans_choice_l(), trans_a(), and trans_choice_a() are aliases
 // for Format::transL(), Format::transChoiceL(), Format::transA(), and Format::transChoiceA()
