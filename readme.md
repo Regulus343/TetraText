@@ -185,7 +185,7 @@ echo Format::a('frog');
 // will output "an octopus"
 echo Format::a('octopus');
 
-// will output "an HTML" (method checks the first two letters for capitals to denote acronym and then uses letter sound)
+// will output "an HTML" (method checks to see if item is all uppercase to denote acronym and then uses letter sound instead)
 echo Format::a('HTML');
 ```
 
@@ -273,13 +273,37 @@ echo Format::paragraphs("This is the first paragraph.\nThis is the second paragr
 $string = 'I define <strong>anarchist society</strong> as one where there is no legal possibility for coercive aggression against the person or property of any individual. Anarchists oppose the State because it has its very being in such aggression, namely, the expropriation of private property through taxation, the coercive exclusion of other providers of defense service from its territory, and all of the other depredations and coercions that are built upon these twin foci of invasions of individual rights. <div class="author">-Murray Rothbard</div>';
 
 // will output 'I define <strong>anarchist society</strong> as one where there is no legal possibility for coercive aggression<span class="exceeded-limit">...</span>'
-echo Format::charLimit($string, 93);
+echo char_limit($string, 93);
 
 // will output 'I define <strong>anarchist society</strong> as one where there is no legal possibility for coercive aggression'
-echo Format::charLimit($string, 93, ['exceededText' => false]);
+echo char_limit($string, 93, ['exceededText' => false]);
 
 // will output 'I define <strong>anarchist society</strong> as one where there is no legal possibility for coercive aggression<a href="https://en.wikiquote.org/wiki/Murray_Rothbard" class="read-more">Read more...</a>'
-echo Format::wordLimit($string, 14, ['exceededText' => 'Read more...', 'exceededLinkUrl' => 'https://en.wikiquote.org/wiki/Murray_Rothbard']);
+echo word_limit($string, 14, ['exceededText' => 'Read more...', 'exceededLinkUrl' => 'https://en.wikiquote.org/wiki/Murray_Rothbard']);
+
+// note: char_limit() and word_limit() are aliases for Format::charLimit(), Format::wordLimit()
 ```
 
 > **Note:** `charLimit()` and `wordLimit()` were designed to maintain HTML tag integrity.
+
+**Apply a character limit to a string:**
+
+```php
+// get a translation and make it lowercase (if it does not appear to be an acronym)
+echo trans_l($value);
+
+// get a translation choice and make it lowercase (if it does not appear to be an acronym)
+echo trans_choice_l($value, 1); //would output "item" from translation variable of "Item|Items"
+
+// get a translation and prepend with "a" or "an" if language is English or exceeds 2 letter language code
+echo trans_a($value); //would output "an umbrella" from translation variable of "umbrella"
+
+// get a translation and prepend with "a" or "an" if language is English or exceeds 2 letter language code
+echo trans_choice_a($value, 1); //would output "an umbrella" from translation variable of "umbrella|umbrellas"
+echo trans_choice_a($value, 2); //would output "2 umbrellas" from translation variable of "umbrella|umbrellas"
+
+// note: trans_l(), trans_choice_l(), trans_a(), and trans_choice_a() are aliases
+// for Format::transL(), Format::transChoiceL(), Format::transA(), and Format::transChoiceA()
+```
+
+> **Note:** `transA()` and `transChoiceA()` can also make use your resulting string lowercase by setting the second or third argument to `true`. The second argument is the `parameters` array, but if it is a boolean, the `parameters` array will be set to empty and it will be interpreted as the `lower` argument instead.

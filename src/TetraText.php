@@ -6,14 +6,16 @@
 		money values and more. There are also some limited date functions available.
 
 		created by Cody Jassman
-		v0.6.0
-		last updated on February 11, 2016
+		v0.6.1
+		last updated on April 30, 2016
 ----------------------------------------------------------------------------------------------------------*/
 
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\URL;
+
+use Lang;
 
 use \HTMLPurifier;
 
@@ -648,26 +650,32 @@ class TetraText {
 	}
 
 	/**
-	 * Add "a" or "an" to prefix to word based on whether it begins with a vowel.
+	 * Add "a" or "an" to prefix to a word based on whether it begins with a vowel.
 	 *
 	 * @param  string  $item
+	 * @param  boolean $addItem
 	 * @return string
 	 */
-	public function a($item)
+	public function a($item, $addItem = true)
 	{
-		$itemFormatted = strtolower($item);
-		$prefix        = 'a';
+		$acronym     = $item == strtoupper($item);
+		$firstLetter = substr(strtolower($item), 0, 1);
+		$prefix      = 'a';
 
-		// use "an" if item begins with a vowel
-		if (in_array(substr($itemFormatted, 0, 1), ['a', 'e', 'i', 'o', 'u']))
+		if ($acronym) // use "an" if item is an acronym and starts with a letter that has a vowel sound
+			$letters = ['a', 'e', 'f', 'h', 'i', 'l', 'm', 'n', 'o', 'r', 's', 'x'];
+		else // use "an" if item begins with a vowel
+			$letters = ['a', 'e', 'i', 'o', 'u'];
+
+		if (in_array($firstLetter, $letters))
 			$prefix .= 'n';
 
-		// use "an" if item is an acronym and starts with a letter that has a vowel sound
-		$letters = ['a', 'e', 'f', 'h', 'i', 'l', 'm', 'n', 'o', 'r', 's', 'x'];
-		if (substr($item, 0, 2) == substr(strtoupper($item), 0, 2) && in_array(substr($itemFormatted, 0, 1), $letters))
-			$prefix .= 'n';
+		$formatted = $prefix;
 
-		return $prefix.' '.$item;
+		if ($addItem)
+			$formatted .= ' '.$item;
+
+		return $formatted;
 	}
 
 	/**
@@ -1456,6 +1464,119 @@ class TetraText {
 		}
 
 		return $formattedString;
+	}
+
+	/**
+	 * Translate the given message and make it lowercase (unless it appears to be an acronym).
+	 *
+	 * @param  string  $id
+	 * @param  array   $parameters
+	 * @param  string  $domain
+	 * @param  string  $locale
+	 * @return \Symfony\Component\Translation\TranslatorInterface|string
+	 */
+	public function transL($id = null, array $parameters = [], $domain = 'messages', $locale = null)
+	{
+		$trans = trans($id, $parameters, $domain, $locale);
+
+		if ($trans != strtoupper($trans))
+			$trans = strtolower($trans);
+
+		return $trans;
+	}
+
+	/**
+	 * Translates the given message based on a count and make it lowercase (unless it appears to be an acronym).
+	 *
+	 * @param  string  $id
+	 * @param  int|array|\Countable  $number
+	 * @param  array   $parameters
+	 * @param  string  $domain
+	 * @param  string  $locale
+	 * @return string
+	 */
+	public function transChoiceL($id, $number = 1, array $parameters = [], $domain = 'messages', $locale = null)
+	{
+		$trans = trans_choice($id, $number, $parameters, $domain, $locale);
+
+		if ($trans != strtoupper($trans))
+			$trans = strtolower($trans);
+
+		return $trans;
+	}
+
+	/**
+	 * Translate the given message and prepend with "a" or "an" (if language is English or exceeds 2 letter language code).
+	 *
+	 * @param  string  $id
+	 * @param  mixed   $parameters
+	 * @param  boolean $lower
+	 * @param  string  $domain
+	 * @param  string  $locale
+	 * @return \Symfony\Component\Translation\TranslatorInterface|string
+	 */
+	public function transA($id = null, $parameters = [], $lower = false, $domain = 'messages', $locale = null)
+	{
+		if (is_bool($parameters)) // allow "parameters" to be skipped in function arguments
+		{
+			$lower      = $parameters;
+			$parameters = [];
+		}
+
+		$trans = trans($id, $parameters, $domain, $locale);
+
+		$locale = !is_null($locale) ? $locale : Lang::locale();
+
+		$acronym = $trans == strtoupper($trans);
+
+		if (($locale == "en" || strlen($locale) > 2))
+			$trans = $this->a($trans);
+
+		if ($lower && !$acronym)
+			$trans = strtolower($trans);
+
+		return $trans;
+	}
+
+	/**
+	 * Translates the given message based on a count and prepend with "a" or "an" (if language is English or exceeds 2 letter language code).
+	 *
+	 * @param  string  $id
+	 * @param  int|array|\Countable  $number
+	 * @param  mixed   $parameters
+	 * @param  boolean $lower
+	 * @param  string  $domain
+	 * @param  string  $locale
+	 * @return string
+	 */
+	public function transChoiceA($id, $number = 1, $parameters = [], $lower = false, $domain = 'messages', $locale = null)
+	{
+		if (is_bool($parameters)) // allow "parameters" to be skipped in function arguments
+		{
+			$lower      = $parameters;
+			$parameters = [];
+		}
+
+		$trans = trans_choice($id, $number, $parameters, $domain, $locale);
+
+		$locale = !is_null($locale) ? $locale : Lang::locale();
+
+		$acronym = $trans == strtoupper($trans);
+
+		if ($number == 1)
+		{
+			if (($locale == "en" || strlen($locale) > 2))
+				$trans = $this->a($trans);
+		}
+		else // if we're not prepending "a" or "an", prepend the number
+		{
+			$trans = $number.' '.$trans;
+		}
+
+		if ($lower && !$acronym)
+			$trans = strtolower($trans);
+
+		return $trans;
 	}
 
 	/**

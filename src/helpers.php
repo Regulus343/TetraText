@@ -215,3 +215,76 @@ if (!function_exists('word_limit'))
 		return \Regulus\TetraText\Facade::wordLimit($string, $config, $alternateConfig);
 	}
 }
+
+if (!function_exists('trans_l'))
+{
+	/**
+	 * Translate the given message and make it lowercase (unless it appears to be an acronym).
+	 *
+	 * @param  string  $id
+	 * @param  array   $parameters
+	 * @param  string  $domain
+	 * @param  string  $locale
+	 * @return \Symfony\Component\Translation\TranslatorInterface|string
+	 */
+	function trans_l($id = null, array $parameters = [], $domain = 'messages', $locale = null)
+	{
+		return \Regulus\TetraText\Facade::transL($id, $parameters, $domain, $locale);
+	}
+}
+
+if (!function_exists('trans_choice_l'))
+{
+	/**
+	 * Translates the given message based on a count and make it lowercase (unless it appears to be an acronym).
+	 *
+	 * @param  string  $id
+	 * @param  int|array|\Countable  $number
+	 * @param  array   $parameters
+	 * @param  string  $domain
+	 * @param  string  $locale
+	 * @return string
+	 */
+	function trans_choice_l($id, $number = 1, array $parameters = [], $domain = 'messages', $locale = null)
+	{
+		return \Regulus\TetraText\Facade::transChoiceL($id, $number, $parameters, $domain, $locale);
+	}
+}
+
+if (!function_exists('trans_a'))
+{
+	/**
+	 * Translate the given message and prepend with "a" or "an".
+	 *
+	 * @param  string  $id
+	 * @param  mixed   $parameters
+	 * @param  boolean $lower
+	 * @param  string  $domain
+	 * @param  string  $locale
+	 * @return \Symfony\Component\Translation\TranslatorInterface|string
+	 */
+	function trans_a($id = null, $parameters = [], $lower = false, $domain = 'messages', $locale = null)
+	{
+		return \Regulus\TetraText\Facade::transA($id, $lower, $parameters, $domain, $locale);
+	}
+}
+
+
+if (!function_exists('trans_choice_a'))
+{
+	/**
+	 * Translates the given message based on a count and prepend with "a" or "an".
+	 *
+	 * @param  string  $id
+	 * @param  int|array|\Countable  $number
+	 * @param  mixed   $parameters
+	 * @param  boolean $lower
+	 * @param  string  $domain
+	 * @param  string  $locale
+	 * @return string
+	 */
+	function trans_choice_a($id, $number = 1, $parameters = [], $lower = false, $domain = 'messages', $locale = null)
+	{
+		return \Regulus\TetraText\Facade::transChoiceA($id, $number, $lower, $parameters, $domain, $locale);
+	}
+}
