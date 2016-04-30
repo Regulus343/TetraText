@@ -265,10 +265,9 @@ if (!function_exists('trans_a'))
 	 */
 	function trans_a($id = null, $parameters = [], $lower = false, $domain = 'messages', $locale = null)
 	{
-		return \Regulus\TetraText\Facade::transA($id, $lower, $parameters, $domain, $locale);
+		return \Regulus\TetraText\Facade::transA($id, $parameters, $lower, $domain, $locale);
 	}
 }
-
 
 if (!function_exists('trans_choice_a'))
 {
@@ -285,6 +284,6 @@ if (!function_exists('trans_choice_a'))
 	 */
 	function trans_choice_a($id, $number = 1, $parameters = [], $lower = false, $domain = 'messages', $locale = null)
 	{
-		return \Regulus\TetraText\Facade::transChoiceA($id, $number, $lower, $parameters, $domain, $locale);
+		return \Regulus\TetraText\Facade::transChoiceA($id, $number, $parameters, $lower, $domain, $locale);
 	}
 }
