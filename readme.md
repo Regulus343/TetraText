@@ -306,4 +306,4 @@ echo trans_choice_a($value, 2); //would output "2 umbrellas" from translation va
 // for Format::transL(), Format::transChoiceL(), Format::transA(), and Format::transChoiceA()
 ```
 
-> **Note:** `transA()` and `transChoiceA()` can also make use your resulting string lowercase by setting the second or third argument to `true`. The second argument is the `parameters` array, but if it is a boolean, the `parameters` array will be set to empty and it will be interpreted as the `lower` argument instead.
+> **Note:** `transA()` and `transChoiceA()` can also make use your resulting string lowercase by setting the second or third argument to `true`. The second argument (second for `transA()`, third for `transChoiceA()`) is the `parameters` array, but if it is a boolean, the `parameters` array will be set to empty and it will be interpreted as the `lower` argument instead.
