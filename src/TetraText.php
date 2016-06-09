@@ -842,9 +842,14 @@ class TetraText {
 			$string = substr($string, 0, $config['charLimit']);
 
 		if ($config['filename'])
+		{
+			$extension = File::extension($string);
 			$string = str_replace('.'.File::extension($string), '', $string).$suffix.'.'.$extension;
+		}
 		else
+		{
 			$string .= $suffix;
+		}
 
 		$existingRecord->where($config['field'], $string);
 
