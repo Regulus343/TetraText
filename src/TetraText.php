@@ -6,8 +6,8 @@
 		money values and more. There are also some limited date functions available.
 
 		created by Cody Jassman
-		v0.6.1
-		last updated on April 30, 2016
+		v0.6.2
+		last updated on June 13, 2016
 ----------------------------------------------------------------------------------------------------------*/
 
 use Illuminate\Support\Facades\DB;
@@ -844,6 +844,7 @@ class TetraText {
 		if ($config['filename'])
 		{
 			$extension = File::extension($string);
+
 			$string = str_replace('.'.File::extension($string), '', $string).$suffix.'.'.$extension;
 		}
 		else
