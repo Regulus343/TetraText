@@ -8,6 +8,8 @@ return [
 
 		'date'     => 'F j, Y',
 		'datetime' => 'F j, Y \a\t g:ia',
+		'time'     => 'g:ia',
+		'timezone' => null,
 
 		'phone' => [
 			'digits'              => 10,

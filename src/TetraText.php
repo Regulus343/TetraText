@@ -6,8 +6,8 @@
 		money values and more. There are also some limited date functions available.
 
 		created by Cody Jassman
-		v0.6.2
-		last updated on June 13, 2016
+		v0.6.3
+		last updated on August 25, 2016
 ----------------------------------------------------------------------------------------------------------*/
 
 use Illuminate\Support\Facades\DB;
@@ -15,6 +15,8 @@ use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\URL;
 
+use DateTime;
+use DateTimeZone;
 use Lang;
 
 use \HTMLPurifier;
@@ -1071,9 +1073,10 @@ class TetraText {
 	 * @param  mixed   $date
 	 * @param  mixed   $format
 	 * @param  string  $adjust
+	 * @param  mixed   $timezone
 	 * @return string
 	 */
-	public function date($date = null, $format = null, $adjust = '')
+	public function date($date = null, $format = null, $adjust = '', $timezone = null)
 	{
 		if (is_null($date))
 			$date = date('Y-m-d H:i:s');
@@ -1084,7 +1087,24 @@ class TetraText {
 		if (is_null($format))
 			$format = config('format.defaults.date');
 
-		return date($format, strtotime($date.' '.$adjust));
+		$time = strtotime($date.' '.$adjust);
+
+		if (is_null($timezone))
+			$timezone = config('format.defaults.timezone');
+
+		if (!is_null($timezone) && $timezone !== false)
+		{
+			$date = new DateTime;
+
+			$date->setTimestamp($time);
+			$date->setTimezone(new DateTimeZone($timezone));
+
+			return $date->format($format);
+		}
+		else
+		{
+			return date($format, $time);
+		}
 	}
 
 	/**
@@ -1093,12 +1113,30 @@ class TetraText {
 	 * @param  mixed   $date
 	 * @param  string  $format
 	 * @param  string  $adjust
+	 * @param  mixed   $timezone
 	 * @return string
 	 */
-	public function dateTime($date = null, $format = null, $adjust = '')
+	public function dateTime($date = null, $format = null, $adjust = '', $timezone = null)
 	{
 		if (is_null($format))
 			$format = config('format.defaults.datetime');
+
+		return $this->date($date, $format, $adjust);
+	}
+
+	/**
+	 * Format a time.
+	 *
+	 * @param  mixed   $date
+	 * @param  string  $format
+	 * @param  string  $adjust
+	 * @param  mixed   $timezone
+	 * @return string
+	 */
+	public function time($date = null, $format = null, $adjust = '', $timezone = null)
+	{
+		if (is_null($format))
+			$format = config('format.defaults.time');
 
 		return $this->date($date, $format, $adjust);
 	}
