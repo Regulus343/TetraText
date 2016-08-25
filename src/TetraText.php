@@ -1076,8 +1076,26 @@ class TetraText {
 	 * @param  mixed   $timezone
 	 * @return string
 	 */
-	public function date($date = null, $format = null, $adjust = '', $timezone = null)
+	public function date($date = null, $format = null, $adjust = null, $timezone = null)
 	{
+		// allow parameters to be passed as associative array
+		if (is_array($date))
+		{
+			if (isset($date['format']))
+				$format = $date['format'];
+
+			if (isset($date['adjust']))
+				$adjust = $date['adjust'];
+
+			if (isset($date['timezone']))
+				$timezone = $date['timezone'];
+
+			if (isset($date['date']))
+				$date = $date['date'];
+			else
+				$date = null;
+		}
+
 		if (is_null($date))
 			$date = date('Y-m-d H:i:s');
 
@@ -1086,6 +1104,9 @@ class TetraText {
 
 		if (is_null($format))
 			$format = config('format.defaults.date');
+
+		if (!is_null($adjust))
+			$date .= ' '.$adjust;
 
 		$time = strtotime($date.' '.$adjust);
 
@@ -1116,12 +1137,12 @@ class TetraText {
 	 * @param  mixed   $timezone
 	 * @return string
 	 */
-	public function dateTime($date = null, $format = null, $adjust = '', $timezone = null)
+	public function dateTime($date = null, $format = null, $adjust = null, $timezone = null)
 	{
 		if (is_null($format))
 			$format = config('format.defaults.datetime');
 
-		return $this->date($date, $format, $adjust);
+		return $this->date($date, $format, $adjust, $timezone);
 	}
 
 	/**
@@ -1133,12 +1154,12 @@ class TetraText {
 	 * @param  mixed   $timezone
 	 * @return string
 	 */
-	public function time($date = null, $format = null, $adjust = '', $timezone = null)
+	public function time($date = null, $format = null, $adjust = null, $timezone = null)
 	{
 		if (is_null($format))
 			$format = config('format.defaults.time');
 
-		return $this->date($date, $format, $adjust);
+		return $this->date($date, $format, $adjust, $timezone);
 	}
 
 	/**
