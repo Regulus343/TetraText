@@ -6,8 +6,8 @@
 		money values and more. There are also some limited date functions available.
 
 		created by Cody Jassman
-		v0.6.4
-		last updated on August 25, 2016
+		v0.6.5
+		last updated on November 8, 2016
 ----------------------------------------------------------------------------------------------------------*/
 
 use Illuminate\Support\Facades\DB;
@@ -488,7 +488,7 @@ class TetraText {
 	 */
 	public function getMethodFromString($method)
 	{
-		preg_match('/\(([A-Za-z0-9\ \'\"\,\.\-]*)\)/', $method, $methodMatch);
+		preg_match('/\(([A-Za-z0-9\ \'\:\;\"\,\.\-\_]*)\)/', $method, $methodMatch);
 
 		if (empty($methodMatch))
 			return null;
