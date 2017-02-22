@@ -6,8 +6,8 @@
 		money values and more. There are also some limited date functions available.
 
 		created by Cody Jassman
-		v0.6.5
-		last updated on November 8, 2016
+		v0.6.6
+		last updated on February 21, 2017
 ----------------------------------------------------------------------------------------------------------*/
 
 use Illuminate\Support\Facades\DB;
@@ -1081,19 +1081,40 @@ class TetraText {
 		// allow parameters to be passed as associative array
 		if (is_array($date))
 		{
-			if (isset($date['format']))
-				$format = $date['format'];
+			$data = $date;
 
-			if (isset($date['adjust']))
-				$adjust = $date['adjust'];
-
-			if (isset($date['timezone']))
-				$timezone = $date['timezone'];
-
-			if (isset($date['date']))
-				$date = $date['date'];
+			if (isset($data['date']))
+				$date = $data['date'];
 			else
 				$date = null;
+
+			if (isset($data['format']))
+				$format = $data['format'];
+
+			if (isset($data['adjust']))
+				$adjust = $data['adjust'];
+
+			if (isset($data['timezone']))
+				$timezone = $data['timezone'];
+		}
+		else
+		{
+			// allow parameters to be passed as associative array for second parameter as well
+			if (is_array($format))
+			{
+				$data = $format;
+
+				if (isset($data['format']))
+					$format = $data['format'];
+				else
+					$format = null;
+
+				if (isset($data['adjust']))
+					$adjust = $data['adjust'];
+
+				if (isset($data['timezone']))
+					$timezone = $data['timezone'];
+			}
 		}
 
 		if (is_null($date))
