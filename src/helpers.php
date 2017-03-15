@@ -222,14 +222,13 @@ if (!function_exists('trans_l'))
 	 * Translate the given message and make it lowercase (unless it appears to be an acronym).
 	 *
 	 * @param  string  $id
-	 * @param  array   $parameters
-	 * @param  string  $domain
+	 * @param  array   $replace
 	 * @param  string  $locale
 	 * @return \Symfony\Component\Translation\TranslatorInterface|string
 	 */
-	function trans_l($id = null, array $parameters = [], $domain = 'messages', $locale = null)
+	function trans_l($id = null, array $replace = [], $locale = null)
 	{
-		return \Regulus\TetraText\Facade::transL($id, $parameters, $domain, $locale);
+		return \Regulus\TetraText\Facade::transL($id, $replace, $locale);
 	}
 }
 
@@ -240,14 +239,13 @@ if (!function_exists('trans_choice_l'))
 	 *
 	 * @param  string  $id
 	 * @param  int|array|\Countable  $number
-	 * @param  array   $parameters
-	 * @param  string  $domain
+	 * @param  array   $replace
 	 * @param  string  $locale
 	 * @return string
 	 */
-	function trans_choice_l($id, $number = 1, array $parameters = [], $domain = 'messages', $locale = null)
+	function trans_choice_l($id, $number = 1, array $replace = [], $locale = null)
 	{
-		return \Regulus\TetraText\Facade::transChoiceL($id, $number, $parameters, $domain, $locale);
+		return \Regulus\TetraText\Facade::transChoiceL($id, $number, $replace, $locale);
 	}
 }
 
@@ -257,15 +255,14 @@ if (!function_exists('trans_a'))
 	 * Translate the given message and prepend with "a" or "an".
 	 *
 	 * @param  string  $id
-	 * @param  mixed   $parameters
+	 * @param  mixed   $replace
 	 * @param  boolean $lower
-	 * @param  string  $domain
 	 * @param  string  $locale
 	 * @return \Symfony\Component\Translation\TranslatorInterface|string
 	 */
-	function trans_a($id = null, $parameters = [], $lower = false, $domain = 'messages', $locale = null)
+	function trans_a($id = null, $replace = [], $lower = false, $locale = null)
 	{
-		return \Regulus\TetraText\Facade::transA($id, $parameters, $lower, $domain, $locale);
+		return \Regulus\TetraText\Facade::transA($id, $replace, $lower, $locale);
 	}
 }
 
@@ -276,14 +273,13 @@ if (!function_exists('trans_choice_a'))
 	 *
 	 * @param  string  $id
 	 * @param  int|array|\Countable  $number
-	 * @param  mixed   $parameters
+	 * @param  mixed   $replace
 	 * @param  boolean $lower
-	 * @param  string  $domain
 	 * @param  string  $locale
 	 * @return string
 	 */
-	function trans_choice_a($id, $number = 1, $parameters = [], $lower = false, $domain = 'messages', $locale = null)
+	function trans_choice_a($id, $number = 1, $replace = [], $lower = false, $locale = null)
 	{
-		return \Regulus\TetraText\Facade::transChoiceA($id, $number, $parameters, $lower, $domain, $locale);
+		return \Regulus\TetraText\Facade::transChoiceA($id, $number, $replace, $lower, $locale);
 	}
 }

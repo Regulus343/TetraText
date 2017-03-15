@@ -6,8 +6,8 @@
 		money values and more. There are also some limited date functions available.
 
 		created by Cody Jassman
-		v0.6.6
-		last updated on February 21, 2017
+		v0.6.7
+		last updated on March 14, 2017
 ----------------------------------------------------------------------------------------------------------*/
 
 use Illuminate\Support\Facades\DB;
@@ -1556,14 +1556,13 @@ class TetraText {
 	 * Translate the given message and make it lowercase (unless it appears to be an acronym).
 	 *
 	 * @param  string  $id
-	 * @param  array   $parameters
-	 * @param  string  $domain
+	 * @param  array   $replace
 	 * @param  string  $locale
 	 * @return \Symfony\Component\Translation\TranslatorInterface|string
 	 */
-	public function transL($id = null, array $parameters = [], $domain = 'messages', $locale = null)
+	public function transL($id = null, array $replace = [], $locale = null)
 	{
-		$trans = trans($id, $parameters, $domain, $locale);
+		$trans = trans($id, $replace, $locale);
 
 		if ($trans != strtoupper($trans))
 			$trans = strtolower($trans);
@@ -1576,14 +1575,13 @@ class TetraText {
 	 *
 	 * @param  string  $id
 	 * @param  int|array|\Countable  $number
-	 * @param  array   $parameters
-	 * @param  string  $domain
+	 * @param  array   $replace
 	 * @param  string  $locale
 	 * @return string
 	 */
-	public function transChoiceL($id, $number = 1, array $parameters = [], $domain = 'messages', $locale = null)
+	public function transChoiceL($id, $number = 1, array $replace = [], $locale = null)
 	{
-		$trans = trans_choice($id, $number, $parameters, $domain, $locale);
+		$trans = trans_choice($id, $number, $replace, $locale);
 
 		if ($trans != strtoupper($trans))
 			$trans = strtolower($trans);
@@ -1595,21 +1593,20 @@ class TetraText {
 	 * Translate the given message and prepend with "a" or "an" (if language is English or exceeds 2 letter language code).
 	 *
 	 * @param  string  $id
-	 * @param  mixed   $parameters
+	 * @param  mixed   $replace
 	 * @param  boolean $lower
-	 * @param  string  $domain
 	 * @param  string  $locale
 	 * @return \Symfony\Component\Translation\TranslatorInterface|string
 	 */
-	public function transA($id = null, $parameters = [], $lower = false, $domain = 'messages', $locale = null)
+	public function transA($id = null, $replace = [], $lower = false, $locale = null)
 	{
-		if (is_bool($parameters)) // allow "parameters" to be skipped in function arguments
+		if (is_bool($replace)) // allow "replace" to be skipped in function arguments
 		{
-			$lower      = $parameters;
-			$parameters = [];
+			$lower   = $replace;
+			$replace = [];
 		}
 
-		$trans = trans($id, $parameters, $domain, $locale);
+		$trans = trans($id, $replace, $locale);
 
 		$locale = !is_null($locale) ? $locale : Lang::locale();
 
@@ -1629,21 +1626,20 @@ class TetraText {
 	 *
 	 * @param  string  $id
 	 * @param  int|array|\Countable  $number
-	 * @param  mixed   $parameters
+	 * @param  mixed   $replace
 	 * @param  boolean $lower
-	 * @param  string  $domain
 	 * @param  string  $locale
 	 * @return string
 	 */
-	public function transChoiceA($id, $number = 1, $parameters = [], $lower = false, $domain = 'messages', $locale = null)
+	public function transChoiceA($id, $number = 1, $replace = [], $lower = false, $locale = null)
 	{
-		if (is_bool($parameters)) // allow "parameters" to be skipped in function arguments
+		if (is_bool($replace)) // allow "replace" to be skipped in function arguments
 		{
-			$lower      = $parameters;
-			$parameters = [];
+			$lower   = $replace;
+			$replace = [];
 		}
 
-		$trans = trans_choice($id, $number, $parameters, $domain, $locale);
+		$trans = trans_choice($id, $number, $replace, $locale);
 
 		$locale = !is_null($locale) ? $locale : Lang::locale();
 
