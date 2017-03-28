@@ -6,7 +6,7 @@
 		money values and more. There are also some limited date functions available.
 
 		created by Cody Jassman
-		v0.6.8
+		v0.6.9
 		last updated on March 27, 2017
 ----------------------------------------------------------------------------------------------------------*/
 
