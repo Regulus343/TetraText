@@ -6,8 +6,8 @@
 		money values and more. There are also some limited date functions available.
 
 		created by Cody Jassman
-		v0.6.9
-		last updated on April 24, 2017
+		v0.6.10
+		last updated on September 25, 2017
 ----------------------------------------------------------------------------------------------------------*/
 
 use Illuminate\Support\Facades\DB;
@@ -703,7 +703,7 @@ class TetraText {
 	public function slug($string, $charLimit = false)
 	{
 		$slug = Str::slug(strtr(
-			trim($string),
+			trim(str_replace('\'', '', $string)),
 			'`!@#$%^&*()-_=+[]{}<>,.?/|:;\\\'"',
 			'                               '
 		));
