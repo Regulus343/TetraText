@@ -6,8 +6,8 @@
 		money values and more. There are also some limited date functions available.
 
 		created by Cody Jassman
-		v0.6.11
-		last updated on September 28, 2017
+		v0.6.12
+		last updated on February 21, 2018
 ----------------------------------------------------------------------------------------------------------*/
 
 use Illuminate\Support\Facades\DB;
@@ -1390,8 +1390,8 @@ class TetraText {
 
 			if ($config['wordLimit'])
 			{
-				$wordsReal       = explode(' ', $string);
-				$exceededHtmlMax = count($wordsReal) > $config['maxWordsHtml'];
+				$wordsReal       = count(explode(' ', $string));
+				$exceededHtmlMax = $wordsReal > $config['maxWordsHtml'];
 
 				if (!$exceededHtmlMax)
 				{
@@ -1414,7 +1414,7 @@ class TetraText {
 			else
 			{
 				$charactersReal  = strlen($string);
-				$exceededHtmlMax = count($charactersReal) > $config['maxCharsHtml'];
+				$exceededHtmlMax = $charactersReal > $config['maxCharsHtml'];
 
 				if (!$exceededHtmlMax)
 				{
