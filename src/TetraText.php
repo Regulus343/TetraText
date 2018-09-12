@@ -6,8 +6,8 @@
 		money values and more. There are also some limited date functions available.
 
 		created by Cody Jassman
-		v0.6.12
-		last updated on February 21, 2018
+		v0.6.13
+		last updated on September 12, 2018
 ----------------------------------------------------------------------------------------------------------*/
 
 use Illuminate\Support\Facades\DB;
@@ -1550,6 +1550,81 @@ class TetraText {
 		}
 
 		return $formattedString;
+	}
+
+	/**
+	 * Convert a CSV to an associative array.
+	 *
+	 * @param  string  $filePath
+	 * @param  mixed   $headerRow
+	 * @return array
+	 */
+	public function csvToArray($filePath, $headerRow = true)
+	{
+		if (!is_file($filePath))
+			return [];
+
+		$data = array_map('str_getcsv', file($filePath));
+
+		if (is_bool($headerRow))
+		{
+			$headerRowSet = $headerRow;
+		}
+		else
+		{
+			$headerRowSet = false;
+
+			if (is_array($headerRow))
+			{
+				$data = array_merge([$headerRow], $data);
+
+				$headerRowSet = true;
+			}
+		}
+
+		if ($headerRowSet)
+		{
+			array_walk($data, function(&$a) use ($data)
+			{
+				$headers    = $data[0];
+				$headerCols = count($headers);
+
+				$colDifference = $headerCols - count($a);
+
+				if ($colDifference != 0)
+				{
+					if ($colDifference > 0)
+					{
+						for ($c = 0; $c < $colDifference; $c++)
+						{
+							$a[] = "";
+						}
+					}
+					else
+					{
+						$a = array_slice($a, 0, $headerCols);
+					}
+				}
+
+				$a = array_combine($headers, $a);
+			});
+
+			array_shift($data);
+		}
+
+		return $data;
+	}
+
+	/**
+	 * Convert a CSV to a collection.
+	 *
+	 * @param  string  $filePath
+	 * @param  mixed   $headerRow
+	 * @return Collection
+	 */
+	public function csvToCollection($filePath, $headerRow = true)
+	{
+		return collect($this->csvToArray($filePath, $headerRow));
 	}
 
 	/**
