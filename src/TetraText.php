@@ -6,8 +6,8 @@
 		money values and more. There are also some limited date functions available.
 
 		created by Cody Jassman
-		v0.6.13
-		last updated on September 12, 2018
+		v0.6.14
+		last updated on November 30, 2018
 ----------------------------------------------------------------------------------------------------------*/
 
 use Illuminate\Support\Facades\DB;
@@ -1371,10 +1371,10 @@ class TetraText {
 		}
 		else
 		{
-			if ((!isset($config['wordLimit']) || !$config['wordLimit']) && (!isset($config['charLimit']) || !$config['charLimit']))
-				$config['wordLimit'] = true;
-			else
-				$config['wordLimit'] = false;
+			$config['wordLimit'] = !isset($config['charLimit']) || !$config['charLimit'];
+
+			if ($config['wordLimit'])
+				$config['charLimit'] = false;
 		}
 
 		$config = array_merge($this->camelizeKeys(config('format.defaults.string_limit')), $config);
