@@ -10,7 +10,7 @@
 	],
 	"require": {
 		"php": ">=5.4.0",
-		"laravel/framework": "5.*",
+		"laravel/framework": ">=5.0.0",
 
 		"ezyang/htmlpurifier": ">=4.8.0"
 	},
