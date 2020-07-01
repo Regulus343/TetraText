@@ -6,8 +6,8 @@
 		money values and more. There are also some limited date functions available.
 
 		created by Cody Jassman
-		v0.6.15
-		last updated on April 4, 2020
+		v0.6.17
+		last updated on June 30, 2020
 ----------------------------------------------------------------------------------------------------------*/
 
 use Illuminate\Support\Facades\DB;
@@ -424,7 +424,7 @@ class TetraText {
 
 		foreach ($array as $key => $value)
 		{
-			$key = camel_case($key);
+			$key = Str::camel($key);
 
 			if (is_array($value) || is_object($value))
 			{
